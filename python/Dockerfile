@@ -23,6 +23,7 @@ RUN python -m venv /venv
 WORKDIR /app
 COPY README.md LICENSE /app/
 COPY pyproject.toml code /app/
+COPY .vscode/launch.json /app/.vscode/
 
 # run project from pyproject.toml
 RUN poetry install
