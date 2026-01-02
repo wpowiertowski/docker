@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "hello-world"
+version = "0.1.0"
+description = "Hello World docker app"
+
+license = "MIT"
+
+authors = [
+    "Wojtek Powiertowski <wojtek@powiertowski.com>"
+]
+
+repository = "https://github.com/wpowiertowski/docker/python"
+
+# README file(s) are used as the package description
+# readme = ["README.md", "LICENSE"]
+
+packages = [
+    { include = "hello" }
+]
+
+# Keywords (translated to tags on the package index)
+[tool.poetry.dependencies]
+# Compatible Python versions
+python = ">=3.14, <4.0"
+
+# Dependency groups are supported for organizing your dependencies
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+# Python-style entrypoints and scripts are easily expressed
+[tool.poetry.scripts]
+app = "hello.hello:main"
