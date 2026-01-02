@@ -12,7 +12,7 @@ authors = [
 repository = "https://github.com/wpowiertowski/docker/python"
 
 # README file(s) are used as the package description
-readme = ["README.md", "LICENSE"]
+readme = ["README.md"]
 
 packages = [
     { include = "hello" }

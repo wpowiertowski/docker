@@ -21,7 +21,7 @@ RUN python -m venv /venv
 
 # copy pyproject.toml to work area
 WORKDIR /app
-COPY README.md LICENSE /app/
+COPY README.md /app/
 COPY pyproject.toml code /app/
 COPY .vscode/launch.json /app/.vscode/
 
