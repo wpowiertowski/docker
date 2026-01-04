@@ -24,7 +24,9 @@ services:
       mail__options__auth__user: ${POSTMASTER}
       mail__options__auth__pass: ${SMTP_PASSWORD}
     volumes:
-      - ${VOLUME_GHOST}:/var/lib/ghost/content
+      - ghost-content:/var/lib/ghost/content
+    networks:
+      - ghost
 
   ghost-db:
     image: mysql:8
@@ -33,7 +35,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - ${VOLUME_DB}:/var/lib/mysql
+      - ghost-db:/var/lib/mysql
+    networks:
+      - ghost
 
   tunnel:
     container_name: cloudflared-tunnel
@@ -42,3 +46,15 @@ services:
     command: tunnel --no-autoupdate run
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - ghost
+
+volumes:
+  ghost-db:
+    external: true
+  ghost-content:
+    external: true
+
+networks:
+  ghost:
+    external: true
