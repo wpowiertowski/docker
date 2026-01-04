@@ -9,3 +9,5 @@
 	st = status
 	cm = commit
 
+[pull]
+	rebase = true
