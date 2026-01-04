@@ -24,7 +24,7 @@ services:
       mail__options__auth__user: ${POSTMASTER}
       mail__options__auth__pass: ${SMTP_PASSWORD}
     volumes:
-      - /Users/vms/OrbStack/docker/volumes/ghost/content:/var/lib/ghost/content
+      - ${VOLUME_GHOST}:/var/lib/ghost/content
 
   ghost-db:
     image: mysql:8
@@ -33,7 +33,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - /Users/vms/OrbStack/docker/volumes/ghost/mysql:/var/lib/mysql
+      - ${VOLUME_DB}:/var/lib/mysql
 
   tunnel:
     container_name: cloudflared-tunnel
