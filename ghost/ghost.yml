@@ -53,7 +53,12 @@ services:
     container_name: posse
     image: wpowiertowski/posse:latest
     restart: always
-    command: poetry run posse 
+    command: poetry run posse
+    volumes:
+      - ./config.yml:/app/config.yml:ro
+    secrets:
+      - pushover_app_token
+      - pushover_user_key
     networks:
       - ghost
 
@@ -66,3 +71,16 @@ volumes:
 networks:
   ghost:
     external: true
+
+# Docker secrets for Pushover credentials
+# To use secrets:
+# 1. Create secrets directory and secret files with your credentials:
+#    mkdir -p secrets
+#    printf '%s' 'YOUR_ACTUAL_APP_TOKEN_HERE' > secrets/pushover_app_token.txt
+#    printf '%s' 'YOUR_ACTUAL_USER_KEY_HERE' > secrets/pushover_user_key.txt
+# 2. Set pushover.enabled to true in config.yml
+secrets:
+  pushover_app_token:
+    file: ./secrets/pushover_app_token.txt
+  pushover_user_key:
+    file: ./secrets/pushover_user_key.txt
