@@ -51,7 +51,7 @@ services:
 
   ghost-posse:
     container_name: posse
-    image: posse:latest 
+    image: wpowiertowski/posse:latest
     restart: always
     command: poetry run posse 
     networks:
