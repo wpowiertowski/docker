@@ -49,7 +49,7 @@ services:
     image: cloudflare/cloudflared
     restart: always
     entrypoint: ["/bin/sh", "-c"]
-    command: ["export TUNNEL_TOKEN=$$(cat /run/secrets/tunnel_token) && cloudflared tunnel --no-autoupdate run"]
+    command: ["TUNNEL_TOKEN=$$(cat /run/secrets/tunnel_token) exec cloudflared tunnel --no-autoupdate run"]
     secrets:
       - tunnel_token
     networks:
