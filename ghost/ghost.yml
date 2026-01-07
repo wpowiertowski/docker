@@ -2,6 +2,7 @@ name: ghost
 services:
 
   ghost-server:
+    container_name: ghost-server
     image: ghost:6
     cap_add:
       - CAP_SYS_NICE
@@ -29,6 +30,7 @@ services:
       - ghost
 
   ghost-db:
+    container_name: ghost-db
     image: mysql:8
     restart: always
     command: --mysql-native-password=ON
@@ -40,7 +42,7 @@ services:
       - ghost
 
   ghost-tunnel:
-    container_name: cloudflared-tunnel
+    container_name: ghost-tunnel
     image: cloudflare/cloudflared
     restart: always
     command: tunnel --no-autoupdate run
@@ -50,7 +52,7 @@ services:
       - ghost
 
   ghost-posse:
-    container_name: posse
+    container_name: ghost-posse
     image: wpowiertowski/posse:latest
     restart: always
     command: poetry run posse
