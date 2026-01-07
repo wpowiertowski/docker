@@ -1,0 +1,26 @@
+name: watchtower
+services:
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: always
+    environment:
+      # Check for updates every 24 hours (in seconds)
+      WATCHTOWER_POLL_INTERVAL: 86400
+      # Clean up old images after updating
+      WATCHTOWER_CLEANUP: "true"
+      # Include stopped containers in monitoring
+      WATCHTOWER_INCLUDE_STOPPED: "true"
+      # Run once and exit (set to false for continuous monitoring)
+      WATCHTOWER_RUN_ONCE: "false"
+      # Enable debug logging
+      WATCHTOWER_DEBUG: "false"
+      # Notification settings (optional - can be configured via environment variables)
+      # WATCHTOWER_NOTIFICATIONS: email
+      # WATCHTOWER_NOTIFICATION_EMAIL_FROM: watchtower@example.com
+      # WATCHTOWER_NOTIFICATION_EMAIL_TO: admin@example.com
+      # WATCHTOWER_NOTIFICATION_EMAIL_SERVER: smtp.example.com
+      # WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: 587
+    volumes:
+      # Mount Docker socket to allow Watchtower to manage containers
+      - /var/run/docker.sock:/var/run/docker.sock
