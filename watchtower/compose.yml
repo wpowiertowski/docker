@@ -2,6 +2,7 @@ name: watchtower
 services:
 
   watchtower:
+    # Using :latest tag to ensure Watchtower itself stays updated
     image: containrrr/watchtower:latest
     restart: always
     environment:
@@ -23,4 +24,5 @@ services:
       # WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: 587
     volumes:
       # Mount Docker socket to allow Watchtower to manage containers
+      # NOTE: This grants full Docker daemon access - only use in trusted environments
       - /var/run/docker.sock:/var/run/docker.sock
