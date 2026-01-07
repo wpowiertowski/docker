@@ -17,9 +17,9 @@ services:
       # Enable debug logging
       WATCHTOWER_DEBUG: "false"
       # Pushover notification settings (configure via .env file and secrets)
-      # NOTE: Ensure WATCHTOWER_NOTIFICATION_URL is set in .env and secrets are created
+      # NOTE: Ensure WATCHTOWER_NOTIFICATION_PUSHOVER_URL is set in .env and secrets are created
       WATCHTOWER_NOTIFICATIONS: pushover
-      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL}
+      WATCHTOWER_NOTIFICATION_PUSHOVER_URL: ${WATCHTOWER_NOTIFICATION_PUSHOVER_URL}
       WATCHTOWER_NOTIFICATION_PUSHOVER_USER_FILE: /run/secrets/pushover_user_key
       WATCHTOWER_NOTIFICATION_PUSHOVER_TOKEN_FILE: /run/secrets/pushover_app_token
     volumes:
@@ -36,7 +36,7 @@ services:
 #    mkdir -p secrets
 #    printf '%s' 'YOUR_ACTUAL_APP_TOKEN_HERE' > secrets/pushover_app_token.txt
 #    printf '%s' 'YOUR_ACTUAL_USER_KEY_HERE' > secrets/pushover_user_key.txt
-# 2. Set WATCHTOWER_NOTIFICATION_URL in .env file (or leave as default)
+# 2. Set WATCHTOWER_NOTIFICATION_PUSHOVER_URL in .env file (or leave as default)
 secrets:
   pushover_app_token:
     file: ./secrets/pushover_app_token.txt
