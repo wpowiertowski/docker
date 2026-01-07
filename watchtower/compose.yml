@@ -6,6 +6,8 @@ services:
     image: containrrr/watchtower:latest
     restart: always
     environment:
+      # Set timezone to Pacific Time (Seattle)
+      TZ: America/Los_Angeles
       # Check for updates every 24 hours (in seconds)
       WATCHTOWER_POLL_INTERVAL: 86400
       # Clean up old images after updating
