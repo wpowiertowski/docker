@@ -16,16 +16,29 @@ services:
       WATCHTOWER_RUN_ONCE: "false"
       # Enable debug logging
       WATCHTOWER_DEBUG: "false"
-      # Email notification settings (configure via .env file)
-      # NOTE: Ensure all email variables are set in .env before enabling
-      WATCHTOWER_NOTIFICATIONS: email
-      WATCHTOWER_NOTIFICATION_EMAIL_FROM: ${WATCHTOWER_EMAIL_FROM}
-      WATCHTOWER_NOTIFICATION_EMAIL_TO: ${WATCHTOWER_EMAIL_TO}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: ${WATCHTOWER_EMAIL_SERVER}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: ${WATCHTOWER_EMAIL_SERVER_PORT}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER: ${WATCHTOWER_EMAIL_SERVER_USER}
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD: ${WATCHTOWER_EMAIL_SERVER_PASSWORD}
+      # Pushover notification settings (configure via .env file and secrets)
+      # NOTE: Ensure WATCHTOWER_NOTIFICATION_URL is set in .env and secrets are created
+      WATCHTOWER_NOTIFICATIONS: pushover
+      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL}
+      WATCHTOWER_NOTIFICATION_PUSHOVER_USER_FILE: /run/secrets/pushover_user_key
+      WATCHTOWER_NOTIFICATION_PUSHOVER_TOKEN_FILE: /run/secrets/pushover_app_token
     volumes:
       # Mount Docker socket to allow Watchtower to manage containers
       # NOTE: This grants full Docker daemon access - only use in trusted environments
       - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - pushover_user_key
+      - pushover_app_token
+
+# Docker secrets for Pushover credentials
+# To use secrets:
+# 1. Create secrets directory and secret files with your credentials:
+#    mkdir -p secrets
+#    printf '%s' 'YOUR_ACTUAL_APP_TOKEN_HERE' > secrets/pushover_app_token.txt
+#    printf '%s' 'YOUR_ACTUAL_USER_KEY_HERE' > secrets/pushover_user_key.txt
+# 2. Set WATCHTOWER_NOTIFICATION_URL in .env file (or leave as default)
+secrets:
+  pushover_app_token:
+    file: ./secrets/pushover_app_token.txt
+  pushover_user_key:
+    file: ./secrets/pushover_user_key.txt
