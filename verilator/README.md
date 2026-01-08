@@ -8,7 +8,7 @@ This setup provides a lightweight Docker container with Verilator for simulating
 
 ## Features
 
-- **Verilator 5.028**: High-performance Verilog simulator
+- **Verilator 4.038**: High-performance Verilog simulator (Ubuntu 22.04 package)
 - **Ubuntu 22.04 base**: Stable and well-supported
 - **Minimal dependencies**: Only essential tools included
 - **Sample design**: Basic 8-bit counter for testing
@@ -105,10 +105,8 @@ Time    Reset   Enable  Count
 
 ### Changing Verilator Version
 
-Edit the `VERILATOR_VERSION` argument in the Dockerfile:
-```dockerfile
-ARG VERILATOR_VERSION=5.028
-```
+The Dockerfile uses the Verilator package from Ubuntu's repository (version 4.038 in Ubuntu 22.04).
+To use a different version, you can modify the Dockerfile to build from source or use a different base image.
 
 ## Verilator Options
 

@@ -30,9 +30,6 @@ int main(int argc, char** argv) {
     
     // Run simulation for several clock cycles
     for (int i = 0; i < 100; i++) {
-        // Toggle clock
-        counter->clk = !counter->clk;
-        
         // Release reset after a few cycles
         if (i > 10) {
             counter->rst_n = 1;
@@ -43,13 +40,16 @@ int main(int argc, char** argv) {
             counter->enable = 1;
         }
         
+        // Toggle clock
+        counter->clk = !counter->clk;
+        
         // Evaluate model
         counter->eval();
         
-        // Print on positive clock edge
-        if (counter->clk && i % 2 == 1) {
+        // Print on rising clock edge (when we've just set clk to 1)
+        if (counter->clk == 1) {
             printf("%3d\t%d\t%d\t%3d\n", 
-                   i/2, counter->rst_n, counter->enable, counter->count);
+                   i, counter->rst_n, counter->enable, counter->count);
         }
         
         main_time++;

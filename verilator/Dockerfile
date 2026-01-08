@@ -11,13 +11,10 @@ LABEL maintainer="wpowiertowski"
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Verilator version
-ARG VERILATOR_VERSION=5.028
-
 # Use bash as default shell
 RUN ln -sf /bin/bash /bin/sh
 
-# Install system packages required for Verilator
+# Install system packages required for Verilator and build tools
 RUN apt-get update && apt-get install -y \
     autoconf \
     automake \
@@ -41,18 +38,12 @@ RUN apt-get update && apt-get install -y \
     perl-doc \
     python3 \
     python3-pip \
+    verilator \
     wget \
     zlib1g \
     zlib1g-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
-
-# Install Verilator from pre-built binary
-RUN mkdir -p /tools/verilator \
-    && curl -sSfL https://storage.googleapis.com/verilator-builds/verilator-v${VERILATOR_VERSION}.tar.gz | tar -C /tools/verilator -xvzf -
-
-# Add Verilator to PATH
-ENV PATH="/tools/verilator/v${VERILATOR_VERSION}/bin:${PATH}"
 
 # Set locale
 ENV LC_ALL=C.UTF-8
