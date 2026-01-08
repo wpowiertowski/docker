@@ -1,44 +1,47 @@
-# Makefile for Verilator simulation
-
-# Verilator configuration
-VERILATOR = verilator
-VERILATOR_FLAGS = --cc --exe --build -Wall
+# Makefile for Verilator simulation with cocotb
 
 # Directories
 RTL_DIR = rtl
 SIM_DIR = sim
-OBJ_DIR = obj_dir
 
 # Design files
 RTL_FILES = $(RTL_DIR)/counter.v
-TB_FILES = $(SIM_DIR)/counter_tb.cpp
+MODULE = counter
+TOPLEVEL = counter
+TOPLEVEL_LANG = verilog
 
-# Output executable
-EXE = $(OBJ_DIR)/Vcounter
+# Cocotb configuration
+export COCOTB_REDUCED_LOG_FMT = 1
+export TOPLEVEL_LANG
+export MODULE
+export TOPLEVEL
+
+# Simulator
+SIM = verilator
+export SIM
+
+# Verilator flags
+EXTRA_ARGS = --trace --trace-structs
+COMPILE_ARGS = -Wall
 
 # Docker configuration
 DOCKER_IMAGE = verilator-sim
 DOCKER_TAG = latest
 
-.PHONY: all build run clean docker-build docker-run docker-test help
+.PHONY: all sim clean docker-build docker-run docker-test help
 
 # Default target
-all: build run
+all: sim
 
-# Build the simulation
-build:
-	@echo "Building counter simulation with Verilator..."
-	$(VERILATOR) $(VERILATOR_FLAGS) $(RTL_FILES) $(TB_FILES)
-
-# Run the simulation
-run: build
-	@echo "Running counter simulation..."
-	@$(EXE)
+# Run the simulation using cocotb
+sim:
+	@echo "Running counter simulation with cocotb..."
+	VERILOG_SOURCES=$(RTL_FILES) MODULE=$(SIM_DIR).counter_tb $(MAKE) -f $(shell cocotb-config --makefiles)/Makefile.sim
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	@rm -rf $(OBJ_DIR)
+	@rm -rf sim_build __pycache__ $(SIM_DIR)/__pycache__ results.xml *.vcd
 
 # Build Docker image
 docker-build:
@@ -49,7 +52,7 @@ docker-build:
 docker-run: docker-build
 	@echo "Running simulation in Docker container..."
 	docker run --rm -v $(PWD):/work -w /work $(DOCKER_IMAGE):$(DOCKER_TAG) \
-		make build run
+		make sim
 
 # Test Docker image (build and run simulation)
 docker-test: docker-run
@@ -57,13 +60,12 @@ docker-test: docker-run
 
 # Show help
 help:
-	@echo "Verilator Simulation Makefile"
-	@echo "=============================="
+	@echo "Verilator Simulation Makefile (with cocotb)"
+	@echo "============================================"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all          - Build and run simulation (default)"
-	@echo "  build        - Build the simulation"
-	@echo "  run          - Run the simulation"
+	@echo "  all          - Run simulation (default)"
+	@echo "  sim          - Run the cocotb simulation"
 	@echo "  clean        - Remove build artifacts"
 	@echo "  docker-build - Build the Docker image"
 	@echo "  docker-run   - Run simulation in Docker"
@@ -71,6 +73,6 @@ help:
 	@echo "  help         - Show this help message"
 	@echo ""
 	@echo "Usage examples:"
-	@echo "  make                # Build and run locally"
+	@echo "  make                # Run simulation locally"
 	@echo "  make docker-test    # Test in Docker container"
 	@echo "  make clean          # Clean build artifacts"

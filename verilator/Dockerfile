@@ -9,10 +9,7 @@ LABEL maintainer="wpowiertowski"
 
 # Avoid user interaction with tzdata during install
 ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=UTC
-
-# Use bash as default shell
-RUN ln -sf /bin/bash /bin/sh
+ENV TZ=America/Los_Angeles
 
 # Install system packages required for Verilator and build tools
 RUN apt-get update && apt-get install -y \
@@ -37,13 +34,23 @@ RUN apt-get update && apt-get install -y \
     perl \
     perl-doc \
     python3 \
+    python3-dev \
     python3-pip \
+    software-properties-common \
     verilator \
     wget \
     zlib1g \
     zlib1g-dev \
+    zsh \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Use zsh as default shell
+RUN ln -sf /bin/zsh /bin/sh
+
+# Install cocotb and related Python packages (using older version for Verilator 4.x compatibility)
+RUN python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip \
+    && python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org "cocotb<2.0" cocotb-bus pytest
 
 # Set locale
 ENV LC_ALL=C.UTF-8

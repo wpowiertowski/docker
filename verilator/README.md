@@ -1,17 +1,20 @@
 # Verilator Simulator Docker Image
 
-A minimal Docker image for RTL simulation using Verilator, based on the [OpenTitan container setup](https://github.com/lowRISC/opentitan/tree/master/util/container).
+A minimal Docker image for RTL simulation using Verilator with cocotb, based on the [OpenTitan container setup](https://github.com/lowRISC/opentitan/tree/master/util/container).
 
 ## Overview
 
-This setup provides a lightweight Docker container with Verilator for simulating Verilog/SystemVerilog designs. Unlike the OpenTitan setup, this configuration excludes Bazel and focuses solely on Verilator simulation capabilities.
+This setup provides a lightweight Docker container with Verilator and cocotb for simulating Verilog/SystemVerilog designs. Unlike the OpenTitan setup, this configuration excludes Bazel and focuses solely on Verilator simulation capabilities with Python-based testing.
 
 ## Features
 
 - **Verilator 4.038**: High-performance Verilog simulator (Ubuntu 22.04 package)
+- **Python 3.10**: Modern Python runtime for cocotb
+- **cocotb**: Python-based testbench framework
 - **Ubuntu 22.04 base**: Stable and well-supported
-- **Minimal dependencies**: Only essential tools included
-- **Sample design**: Basic 8-bit counter for testing
+- **zsh**: Default shell for enhanced usability
+- **Pacific timezone**: Configured for America/Los_Angeles
+- **Sample design**: Basic 8-bit counter with cocotb tests
 
 ## Directory Structure
 
@@ -23,7 +26,7 @@ verilator/
 ├── rtl/                # RTL design files
 │   └── counter.v       # Example counter module
 └── sim/                # Simulation testbenches
-    └── counter_tb.cpp  # C++ testbench for counter
+    └── counter_tb.py   # Python/cocotb testbench for counter
 ```
 
 ## Quick Start
@@ -46,23 +49,18 @@ verilator/
    make docker-run
    ```
 
-### Local Development (Verilator Required)
+### Local Development (Verilator & cocotb Required)
 
-If you have Verilator installed locally:
+If you have Verilator and cocotb installed locally:
 
-1. **Build the simulation:**
+1. **Run the simulation:**
    ```bash
-   make build
+   make sim
    ```
 
-2. **Run the simulation:**
+2. **Clean build artifacts:**
    ```bash
-   make run
-   ```
-
-3. **Build and run:**
-   ```bash
-   make all
+   make clean
    ```
 
 ## Example Design
@@ -72,10 +70,11 @@ The included counter design (`rtl/counter.v`) is a simple 8-bit counter with:
 - Enable control
 - Parameterizable width
 
-The testbench (`sim/counter_tb.cpp`) demonstrates:
-- Reset sequence
-- Enable control
-- Counter operation verification
+The testbench (`sim/counter_tb.py`) demonstrates:
+- Reset sequence verification
+- Enable control testing
+- Counter operation validation
+- Multiple test scenarios using cocotb
 
 ### Expected Output
 
@@ -83,12 +82,14 @@ The testbench (`sim/counter_tb.cpp`) demonstrates:
 Starting counter simulation...
 Time    Reset   Enable  Count
 ====    =====   ======  =====
-  5     0       0         0
-  6     1       0         0
- 10     1       1         0
- 11     1       1         1
- 12     1       1         2
+   0    0       0         0
+   1    0       0         0
 ...
+  10    1       1         1
+  11    1       1         2
+  12    1       1         3
+...
+Simulation completed successfully!
 ```
 
 ## Customization
@@ -96,11 +97,12 @@ Time    Reset   Enable  Count
 ### Using Your Own Design
 
 1. Place your RTL files in the `rtl/` directory
-2. Create a testbench in the `sim/` directory
+2. Create a Python testbench in the `sim/` directory using cocotb
 3. Update the Makefile variables:
    ```makefile
    RTL_FILES = $(RTL_DIR)/your_design.v
-   TB_FILES = $(SIM_DIR)/your_testbench.cpp
+   MODULE = your_module_name
+   TOPLEVEL = your_top_level
    ```
 
 ### Changing Verilator Version
@@ -108,17 +110,25 @@ Time    Reset   Enable  Count
 The Dockerfile uses the Verilator package from Ubuntu's repository (version 4.038 in Ubuntu 22.04).
 To use a different version, you can modify the Dockerfile to build from source or use a different base image.
 
-## Verilator Options
+## cocotb Testing
 
-The Makefile uses these Verilator flags:
-- `--cc`: Generate C++ output
-- `--exe`: Create executable
-- `--build`: Compile the generated code
-- `-Wall`: Enable all warnings
+cocotb provides a Python-based verification framework. Key features:
+- Write testbenches in Python
+- Async/await syntax for timing control
+- Easy-to-read test code
+- Automatic waveform generation with `--trace`
 
-Add more flags in the Makefile as needed:
-```makefile
-VERILATOR_FLAGS = --cc --exe --build -Wall --trace
+Example test structure:
+```python
+@cocotb.test()
+async def my_test(dut):
+    # Create clock
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start())
+    
+    # Test logic here
+    await RisingEdge(dut.clk)
+    assert dut.output.value == expected_value
 ```
 
 ## Reference
