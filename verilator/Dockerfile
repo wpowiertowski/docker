@@ -43,19 +43,20 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     zsh \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* \
+    && update-ca-certificates
 
 # Build and install Verilator 5.044 from source
 RUN cd /tmp \
-    && git clone https://github.com/verilator/verilator.git \
-    && cd verilator \
-    && git checkout v5.044 \
+    && wget --no-check-certificate https://github.com/verilator/verilator/archive/refs/tags/v5.044.tar.gz \
+    && tar -xzf v5.044.tar.gz \
+    && cd verilator-5.044 \
     && autoconf \
     && ./configure \
     && make -j$(nproc) \
     && make install \
     && cd / \
-    && rm -rf /tmp/verilator
+    && rm -rf /tmp/verilator-5.044 /tmp/v5.044.tar.gz
 
 # Use zsh as default shell
 RUN ln -sf /bin/zsh /bin/sh
