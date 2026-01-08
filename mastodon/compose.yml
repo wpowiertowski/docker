@@ -1,0 +1,166 @@
+name: mastodon
+services:
+
+  mastodon-db:
+    container_name: mastodon-db
+    image: postgres:14-alpine
+    restart: always
+    shm_size: 256mb
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: mastodon
+      POSTGRES_DB: mastodon_production
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mastodon-db:/var/lib/postgresql/data
+    networks:
+      - mastodon
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'mastodon']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mastodon-redis:
+    container_name: mastodon-redis
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - mastodon-redis:/data
+    networks:
+      - mastodon
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mastodon-web:
+    container_name: mastodon-web
+    image: tootsuite/mastodon:latest
+    restart: always
+    depends_on:
+      - mastodon-db
+      - mastodon-redis
+      - mastodon-tunnel
+    environment:
+      LOCAL_DOMAIN: ${LOCAL_DOMAIN}
+      REDIS_HOST: mastodon-redis
+      REDIS_PORT: 6379
+      DB_HOST: mastodon-db
+      DB_USER: mastodon
+      DB_NAME: mastodon_production
+      DB_PASS: ${DB_PASSWORD}
+      DB_PORT: 5432
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      OTP_SECRET: ${OTP_SECRET}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      # Test mode configuration
+      RAILS_ENV: production
+      NODE_ENV: production
+      # Disable email verification for testing
+      SMTP_SERVER: 
+      SMTP_PORT: 
+      SMTP_FROM_ADDRESS: noreply@${LOCAL_DOMAIN}
+      # Allow registration for testing
+      SINGLE_USER_MODE: "false"
+      # Disable require invite for testing
+      AUTHORIZED_FETCH: "false"
+      LIMITED_FEDERATION_MODE: "false"
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails db:migrate; bundle exec rails db:seed; bundle exec rails server -b 0.0.0.0"
+    volumes:
+      - mastodon-public-system:/mastodon/public/system
+    networks:
+      - mastodon
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mastodon-streaming:
+    container_name: mastodon-streaming
+    image: tootsuite/mastodon:latest
+    restart: always
+    depends_on:
+      - mastodon-db
+      - mastodon-redis
+    environment:
+      LOCAL_DOMAIN: ${LOCAL_DOMAIN}
+      REDIS_HOST: mastodon-redis
+      REDIS_PORT: 6379
+      DB_HOST: mastodon-db
+      DB_USER: mastodon
+      DB_NAME: mastodon_production
+      DB_PASS: ${DB_PASSWORD}
+      DB_PORT: 5432
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      OTP_SECRET: ${OTP_SECRET}
+      RAILS_ENV: production
+      NODE_ENV: production
+    command: node ./streaming
+    networks:
+      - mastodon
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mastodon-sidekiq:
+    container_name: mastodon-sidekiq
+    image: tootsuite/mastodon:latest
+    restart: always
+    depends_on:
+      - mastodon-db
+      - mastodon-redis
+    environment:
+      LOCAL_DOMAIN: ${LOCAL_DOMAIN}
+      REDIS_HOST: mastodon-redis
+      REDIS_PORT: 6379
+      DB_HOST: mastodon-db
+      DB_USER: mastodon
+      DB_NAME: mastodon_production
+      DB_PASS: ${DB_PASSWORD}
+      DB_PORT: 5432
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      OTP_SECRET: ${OTP_SECRET}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      RAILS_ENV: production
+      NODE_ENV: production
+      # Sidekiq configuration
+      DB_POOL: 25
+    command: bundle exec sidekiq
+    volumes:
+      - mastodon-public-system:/mastodon/public/system
+    networks:
+      - mastodon
+    healthcheck:
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq 6' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mastodon-tunnel:
+    container_name: mastodon-tunnel
+    image: cloudflare/cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - mastodon
+
+volumes:
+  mastodon-db:
+    external: true
+  mastodon-redis:
+    external: true
+  mastodon-public-system:
+    external: true
+
+networks:
+  mastodon:
+    external: true

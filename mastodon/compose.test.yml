@@ -1,0 +1,34 @@
+# Docker Compose Override for Testing
+# This file can be used with: docker compose -f compose.yml -f compose.test.yml up
+#
+# This configuration adds test-specific settings:
+# - Exposes ports locally for direct access
+# - Adds test database credentials
+# - Disables some security features for easier testing
+
+name: mastodon
+services:
+
+  mastodon-web:
+    ports:
+      - "3000:3000"
+    environment:
+      # Disable some features for easier testing
+      DISABLE_SIMPLECOV: "true"
+      # Allow local development without HTTPS
+      RAILS_SERVE_STATIC_FILES: "true"
+
+  mastodon-streaming:
+    ports:
+      - "4000:4000"
+
+  mastodon-db:
+    ports:
+      - "5432:5432"
+    environment:
+      # For test access
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  mastodon-redis:
+    ports:
+      - "6379:6379"
