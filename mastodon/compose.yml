@@ -59,9 +59,7 @@ services:
       # Test mode configuration
       RAILS_ENV: production
       NODE_ENV: production
-      # Disable email verification for testing
-      SMTP_SERVER: 
-      SMTP_PORT: 
+      # Disable email verification for testing (no SMTP configured)
       SMTP_FROM_ADDRESS: noreply@${LOCAL_DOMAIN}
       # Allow registration for testing
       SINGLE_USER_MODE: "false"
@@ -138,7 +136,7 @@ services:
     networks:
       - mastodon
     healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq 6' || exit 1"]
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

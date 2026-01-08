@@ -1,7 +1,6 @@
+#!/bin/bash
 # Mastodon Health Check Script
 # This script checks if all Mastodon services are healthy and ready
-
-#!/bin/bash
 
 set -e
 

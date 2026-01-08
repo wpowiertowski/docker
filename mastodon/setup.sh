@@ -25,8 +25,12 @@ cp .env.example .env
 
 echo "Generating Mastodon secrets..."
 echo ""
+echo "Note: Using official Mastodon image to generate cryptographically secure secrets."
+echo "This ensures compatibility with Mastodon's requirements."
+echo ""
 
 # Generate SECRET_KEY_BASE
+# Using official Mastodon rake tasks ensures proper secret generation
 echo "Generating SECRET_KEY_BASE..."
 SECRET_KEY_BASE=$(docker run --rm -it tootsuite/mastodon:latest bundle exec rake secret | tr -d '\r')
 sed -i "s|SECRET_KEY_BASE=.*|SECRET_KEY_BASE=${SECRET_KEY_BASE}|g" .env
