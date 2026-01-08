@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         
         // Print on rising clock edge (when we've just set clk to 1)
         if (counter->clk == 1) {
-            printf("%3d\t%d\t%d\t%3d\n", 
+            printf("%4d\t%d\t%d\t%3d\n", 
                    i, counter->rst_n, counter->enable, counter->count);
         }
         
