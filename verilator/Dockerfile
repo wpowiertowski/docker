@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     flex \
     g++ \
     git \
+    help2man \
     libfl2 \
     libfl-dev \
     libgoogle-perftools-dev \
@@ -37,19 +38,33 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     python3-pip \
     software-properties-common \
-    verilator \
     wget \
     zlib1g \
     zlib1g-dev \
     zsh \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* \
+    && update-ca-certificates
+
+# Build and install Verilator 5.044 from source
+# Note: --no-check-certificate is used due to proxy certificates in some build environments
+# In production, ensure proper SSL certificate validation
+RUN cd /tmp \
+    && wget --no-check-certificate https://github.com/verilator/verilator/archive/refs/tags/v5.044.tar.gz \
+    && tar -xzf v5.044.tar.gz \
+    && cd verilator-5.044 \
+    && autoconf \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/verilator-5.044 /tmp/v5.044.tar.gz
 
 # Use zsh as default shell
 RUN ln -sf /bin/zsh /bin/sh
 
-# Install cocotb and related Python packages (using 1.9.x for Verilator 5.020 compatibility)
-RUN python3 -m pip install --break-system-packages --trusted-host pypi.org --trusted-host files.pythonhosted.org "cocotb>=1.9,<2.0" cocotb-bus pytest
+# Install cocotb 2.0.0 and related Python packages
+RUN python3 -m pip install --break-system-packages --trusted-host pypi.org --trusted-host files.pythonhosted.org "cocotb==2.0.0" cocotb-bus pytest
 
 # Set locale
 ENV LC_ALL=C.UTF-8
