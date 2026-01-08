@@ -1,7 +1,7 @@
 # Minimal Verilator simulator Docker image
 # Based on https://github.com/lowRISC/opentitan/tree/master/util/container
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL version="1.0"
 LABEL description="Minimal Verilator development container for RTL simulation."
@@ -48,9 +48,8 @@ RUN apt-get update && apt-get install -y \
 # Use zsh as default shell
 RUN ln -sf /bin/zsh /bin/sh
 
-# Install cocotb and related Python packages (using older version for Verilator 4.x compatibility)
-RUN python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip \
-    && python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org "cocotb<2.0" cocotb-bus pytest
+# Install cocotb and related Python packages (using 1.9.x for Verilator 5.020 compatibility)
+RUN python3 -m pip install --break-system-packages --trusted-host pypi.org --trusted-host files.pythonhosted.org "cocotb>=1.9,<2.0" cocotb-bus pytest
 
 # Set locale
 ENV LC_ALL=C.UTF-8

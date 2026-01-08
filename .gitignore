@@ -5,3 +5,8 @@ secrets
 
 # Verilator build artifacts
 verilator/obj_dir/
+verilator/sim_build/
+verilator/__pycache__/
+verilator/sim/__pycache__/
+verilator/results.xml
+verilator/*.vcd
