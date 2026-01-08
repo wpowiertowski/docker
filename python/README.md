@@ -7,7 +7,7 @@ Simple hello-world demo inside docker with VSCode debug hooks and poetry depende
 ### Build
 
 ```shell
-docker build --pull --rm . -t hello:latest
+docker build --pull --rm . -t devbox:latest
 ```
 
 ### Run standalone
