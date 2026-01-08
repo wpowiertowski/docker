@@ -8,9 +8,9 @@ This setup provides a lightweight Docker container with Verilator and cocotb for
 
 ## Features
 
-- **Verilator 5.020**: High-performance Verilog simulator (Ubuntu 24.04 package)
+- **Verilator 5.044**: High-performance Verilog simulator (built from source)
 - **Python 3.12**: Modern Python runtime for cocotb
-- **cocotb**: Python-based testbench framework
+- **cocotb 2.0.0**: Python-based testbench framework
 - **Ubuntu 24.04 base**: Latest LTS release
 - **zsh**: Default shell for enhanced usability
 - **Pacific timezone**: Configured for America/Los_Angeles
@@ -107,8 +107,8 @@ Simulation completed successfully!
 
 ### Changing Verilator Version
 
-The Dockerfile uses the Verilator package from Ubuntu's repository (version 5.020 in Ubuntu 24.04).
-To use a different version, you can modify the Dockerfile to build from source or use a different base image.
+The Dockerfile builds Verilator 5.044 from source.
+To use a different version, modify the `git checkout` line in the Dockerfile to your desired version tag.
 
 ## cocotb Testing
 
