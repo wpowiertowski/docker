@@ -27,7 +27,30 @@ The setup includes the following services:
 2. A Cloudflare account with a tunnel configured
 3. A domain name configured to use the Cloudflare tunnel
 
+## Quick Start
+
+For a quick start, see [QUICKSTART.md](QUICKSTART.md) or use the Makefile:
+
+```bash
+make help           # See all available commands
+make setup          # Run setup wizard
+make volumes network # Create Docker resources
+make up             # Start services
+make health         # Check service status
+make admin          # Create admin user
+```
+
 ## Setup Instructions
+
+### Option 1: Using the Setup Script (Recommended)
+
+```bash
+./setup.sh
+```
+
+This will automatically generate all required secrets and create your `.env` file.
+
+### Option 2: Manual Setup
 
 ### 1. Generate Mastodon Secrets
 
@@ -64,6 +87,10 @@ Edit `.env` and set:
 Create the required Docker volumes and network:
 
 ```bash
+# Using make (recommended)
+make volumes network
+
+# Or manually
 docker volume create mastodon-db
 docker volume create mastodon-redis
 docker volume create mastodon-public-system
@@ -83,12 +110,22 @@ docker network create mastodon
 ### 5. Start the Services
 
 ```bash
+# Using make (recommended)
+make up        # Standard mode
+# OR
+make up-test   # Test mode with exposed ports
+
+# Or manually
 docker compose up -d
 ```
 
 Wait for all services to be healthy (this may take a few minutes on first run):
 
 ```bash
+# Using make
+make health
+
+# Or manually
 docker compose ps
 ```
 
@@ -97,6 +134,10 @@ docker compose ps
 Once all services are running, create an admin user:
 
 ```bash
+# Using make (recommended)
+make admin
+
+# Or manually
 docker compose exec mastodon-web bash -c "RAILS_ENV=production bin/tootctl accounts create \
   admin \
   --email admin@example.com \
@@ -153,7 +194,10 @@ To create an API application for testing:
 ### View Logs
 
 ```bash
-# All services
+# Using make
+make logs
+
+# Or manually
 docker compose logs -f
 
 # Specific service
@@ -163,12 +207,20 @@ docker compose logs -f mastodon-web
 ### Restart Services
 
 ```bash
+# Using make
+make restart
+
+# Or manually
 docker compose restart
 ```
 
 ### Stop Services
 
 ```bash
+# Using make
+make down
+
+# Or manually
 docker compose down
 ```
 
