@@ -2,3 +2,6 @@
 .DS_Store
 .ssh
 secrets
+
+# Verilator build artifacts
+verilator/obj_dir/
