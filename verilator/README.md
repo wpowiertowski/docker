@@ -107,8 +107,8 @@ Simulation completed successfully!
 
 ### Changing Verilator Version
 
-The Dockerfile builds Verilator 5.044 from source.
-To use a different version, modify the `git checkout` line in the Dockerfile to your desired version tag.
+The Dockerfile builds Verilator 5.044 from source by downloading a tarball from GitHub.
+To use a different version, modify the version number in the wget URL in the Dockerfile (e.g., change `v5.044.tar.gz` to your desired version).
 
 ## cocotb Testing
 

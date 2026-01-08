@@ -47,6 +47,8 @@ RUN apt-get update && apt-get install -y \
     && update-ca-certificates
 
 # Build and install Verilator 5.044 from source
+# Note: --no-check-certificate is used due to proxy certificates in some build environments
+# In production, ensure proper SSL certificate validation
 RUN cd /tmp \
     && wget --no-check-certificate https://github.com/verilator/verilator/archive/refs/tags/v5.044.tar.gz \
     && tar -xzf v5.044.tar.gz \
