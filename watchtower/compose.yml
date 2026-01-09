@@ -18,6 +18,9 @@ services:
       WATCHTOWER_RUN_ONCE: "false"
       # Enable debug logging
       WATCHTOWER_DEBUG: "false"
+      # Enable label-based opt-in monitoring (only monitor containers with enable label)
+      # This skips locally built images that don't have the com.centurylinklabs.watchtower.enable=true label
+      WATCHTOWER_LABEL_ENABLE: "true"
       # Pushover notification settings (configure via .env file)
       WATCHTOWER_NOTIFICATIONS: shoutrrr
       WATCHTOWER_NOTIFICATION_URL: pushover://shoutrrr:${PUSHOVER_APP_TOKEN}@${PUSHOVER_USER_KEY}
