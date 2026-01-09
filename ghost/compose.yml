@@ -10,6 +10,8 @@ services:
     depends_on:
       - ghost-db
       - ghost-tunnel
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       url: ${DOMAIN}
       database__client: mysql
@@ -34,6 +36,8 @@ services:
     image: mysql:8
     restart: always
     command: --mysql-native-password=ON
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -46,6 +50,8 @@ services:
     image: cloudflare/cloudflared
     restart: always
     command: tunnel --no-autoupdate run
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
@@ -56,6 +62,8 @@ services:
     image: wpowiertowski/posse:latest
     restart: always
     command: poetry run posse
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     volumes:
       - ./config.yml:/app/config.yml:ro
     secrets:
