@@ -1,0 +1,21 @@
+name: homebridge
+services:
+
+  homebridge:
+    container_name: homebridge
+    image: homebridge/homebridge:latest
+    restart: always
+    network_mode: host
+    volumes:
+      - homebridge:/homebridge
+    environment:
+      - TZ=America/Los_Angeles
+    logging:
+      driver: json-file
+      options:
+        max-size: "10mb"
+        max-file: "1"
+
+volumes:
+  homebridge:
+    external: true
