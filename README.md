@@ -1,6 +1,6 @@
 # About
 
-A collection of docker cointainers I use for various hobby projects, currently consists of the following:
+A collection of docker containers I use for various hobby projects, currently consists of the following:
 
 - `ghost` -> ghost6 based blog setup
 - `homebridge` -> latest Homebridge container for HomeKit integration (armv8 architecture)

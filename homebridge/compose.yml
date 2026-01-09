@@ -16,6 +16,8 @@ services:
         max-size: "10mb"
         max-file: "1"
 
+# External volume must be created manually before starting the container:
+# docker volume create homebridge
 volumes:
   homebridge:
     external: true
