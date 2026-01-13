@@ -68,6 +68,7 @@ docker run -d \
 - `CLIP_MODEL_NAME`: Name of the CLIP projector GGUF file (default: `mmproj-model-f16.gguf`)
 - `MODEL_PATH`: Directory containing the models (default: `/models`)
 - `PORT`: Port for the Flask server (default: `5000`)
+- `N_THREADS`: Number of CPU threads for inference (default: half of available CPUs, or set to 0 for auto)
 
 ## API Documentation
 

@@ -59,10 +59,20 @@ def load_model():
     try:
         # Initialize with vision support
         # For Llama 3.2 Vision models, we need both the main model and CLIP projector
+        
+        # Configure CPU threads conservatively to avoid resource contention
+        # Use environment variable if set, otherwise use half of available CPUs
+        n_threads = int(os.environ.get('N_THREADS', 0))
+        if n_threads <= 0:
+            cpu_count = os.cpu_count() or 4
+            n_threads = max(1, cpu_count // 2)
+        
+        logger.info(f"Using {n_threads} CPU threads for inference")
+        
         model_kwargs = {
             "model_path": str(full_model_path),
             "n_ctx": 2048,  # Context window
-            "n_threads": os.cpu_count(),  # Use all available CPU threads
+            "n_threads": n_threads,
             "n_gpu_layers": 0,  # CPU only, no GPU layers
             "verbose": False,
         }
@@ -216,10 +226,18 @@ def infer():
         temperature = data.get('temperature', 0.7)
         top_p = data.get('top_p', 0.95)
         
-        logger.info(f"Processing inference request with prompt: {prompt_text[:50]}...")
+        logger.info(f"Processing inference request (prompt length: {len(prompt_text)} chars)")
         
         # Process image
-        image_path = process_image(image_data)
+        image_path = None
+        try:
+            image_path = process_image(image_data)
+        except ValueError as e:
+            error = ErrorResponse(
+                error=str(e),
+                error_type="validation"
+            )
+            return jsonify(error.model_dump()), 400
         
         try:
             # Create vision prompt
@@ -262,18 +280,11 @@ def infer():
             
         finally:
             # Clean up temporary image file
-            try:
-                os.unlink(image_path)
-            except Exception as e:
-                logger.warning(f"Failed to delete temporary image: {e}")
-    
-    except ValueError as e:
-        logger.error(f"Validation error: {e}")
-        error = ErrorResponse(
-            error=str(e),
-            error_type="validation"
-        )
-        return jsonify(error.model_dump()), 400
+            if image_path:
+                try:
+                    os.unlink(image_path)
+                except Exception as e:
+                    logger.warning(f"Failed to delete temporary image: {e}")
     
     except Exception as e:
         logger.error(f"Inference error: {e}", exc_info=True)
