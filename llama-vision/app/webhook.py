@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 
 from flask import Flask, request, jsonify
-from werkzeug.exceptions import BadRequest
 from PIL import Image
 from llama_cpp import Llama
 
