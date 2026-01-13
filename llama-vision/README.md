@@ -140,9 +140,24 @@ docker run -d \
 }
 ```
 
-## Response Schema
+## API Schema Documentation
 
-The formal JSON schema definition is available in `app/response_schema.json`. Below are examples of the response formats:
+### Request Schema
+
+The formal JSON schema definition for API requests is available in `app/request_schema.json`. This schema documents the expected format for the POST `/infer` endpoint.
+
+**Required Fields:**
+- `prompt` (string): Text prompt or question about the image
+- `image` (string): Base64 encoded image data
+
+**Optional Fields:**
+- `max_tokens` (integer, 1-4096, default: 256): Maximum tokens to generate
+- `temperature` (float, 0.0-2.0, default: 0.7): Sampling temperature
+- `top_p` (float, 0.0-1.0, default: 0.95): Nucleus sampling parameter
+
+### Response Schema
+
+The formal JSON schema definition for API responses is available in `app/response_schema.json`. Below are examples of the response formats:
 
 ### VisionResponse
 
@@ -267,7 +282,8 @@ llama-vision/
 ├── README.md              # This file
 └── app/
     ├── webhook.py         # Flask application
-    ├── models.py          # Pydantic validation models
+    ├── models.py          # Pydantic validation models (request and response)
+    ├── request_schema.json   # JSON schema for API requests
     └── response_schema.json  # JSON schema for API responses
 ```
 

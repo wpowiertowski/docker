@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Llama Vision API Request Schemas",
+  "definitions": {
+    "InferenceRequest": {
+      "type": "object",
+      "description": "Request format for vision inference with image and text prompt",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "Text prompt or question about the image",
+          "minLength": 1,
+          "examples": [
+            "Describe this image in detail",
+            "What objects can you see in this image?",
+            "What is the main subject of this image?"
+          ]
+        },
+        "image": {
+          "type": "string",
+          "description": "Base64 encoded image data. Can include data URL prefix (e.g., 'data:image/png;base64,') or be raw base64 string",
+          "minLength": 1,
+          "examples": [
+            "iVBORw0KGgoAAAANSUhEUgAAAAUA...",
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+          ]
+        },
+        "max_tokens": {
+          "type": "integer",
+          "description": "Maximum number of tokens to generate in the response",
+          "minimum": 1,
+          "maximum": 4096,
+          "default": 256,
+          "examples": [256, 512, 1024]
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Sampling temperature for response generation. Higher values make output more random, lower values make it more deterministic",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": 0.7,
+          "examples": [0.5, 0.7, 1.0]
+        },
+        "top_p": {
+          "type": "number",
+          "description": "Nucleus sampling parameter. The model considers the results of the tokens with top_p probability mass",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.95,
+          "examples": [0.9, 0.95, 1.0]
+        }
+      },
+      "required": ["prompt", "image"],
+      "additionalProperties": false
+    }
+  }
+}

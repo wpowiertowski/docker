@@ -1,11 +1,42 @@
 """
-Response models for runtime validation in the Llama Vision webhook.
-For the formal JSON schema definition, see response_schema.json.
+Request and response models for runtime validation in the Llama Vision webhook.
+For the formal JSON schema definitions, see request_schema.json and response_schema.json.
 """
 
 from typing import Optional, Dict, Any, Literal
 from pydantic import BaseModel, Field
 from datetime import datetime
+
+
+class InferenceRequest(BaseModel):
+    """Request format for vision inference with image and text prompt."""
+    
+    prompt: str = Field(
+        description="Text prompt or question about the image",
+        min_length=1
+    )
+    image: str = Field(
+        description="Base64 encoded image data. Can include data URL prefix or be raw base64 string",
+        min_length=1
+    )
+    max_tokens: Optional[int] = Field(
+        default=256,
+        description="Maximum number of tokens to generate in the response",
+        ge=1,
+        le=4096
+    )
+    temperature: Optional[float] = Field(
+        default=0.7,
+        description="Sampling temperature for response generation",
+        ge=0.0,
+        le=2.0
+    )
+    top_p: Optional[float] = Field(
+        default=0.95,
+        description="Nucleus sampling parameter",
+        ge=0.0,
+        le=1.0
+    )
 
 
 class TokenUsage(BaseModel):
