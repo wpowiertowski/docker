@@ -142,33 +142,38 @@ docker run -d \
 
 ## Response Schema
 
+The formal JSON schema definition is available in `app/response_schema.json`. Below are examples of the response formats:
+
 ### VisionResponse
 
-```python
+```json
 {
-  "success": bool,              # Request success status
-  "response_text": str,         # Generated text response
-  "model": str,                 # Model used for inference
-  "timestamp": str,             # ISO timestamp
-  "token_usage": {              # Token usage statistics
-    "prompt_tokens": int,
-    "completion_tokens": int,
-    "total_tokens": int
+  "success": true,
+  "response_text": "The image shows...",
+  "model": "llama-3.2-11b-vision-instruct-q4_k_m.gguf",
+  "timestamp": "2024-01-13T12:00:00.000000",
+  "token_usage": {
+    "prompt_tokens": 150,
+    "completion_tokens": 200,
+    "total_tokens": 350
   },
-  "metadata": dict,             # Additional metadata
-  "error": str | null           # Error message if any
+  "metadata": {
+    "max_tokens": 256,
+    "temperature": 0.7
+  },
+  "error": null
 }
 ```
 
 ### ErrorResponse
 
-```python
+```json
 {
-  "success": false,             # Always false for errors
-  "error": str,                 # Error message
-  "error_type": str,            # Error type (validation, model, system)
-  "timestamp": str,             # ISO timestamp
-  "details": dict | null        # Additional error details
+  "success": false,
+  "error": "Missing required field: prompt",
+  "error_type": "validation",
+  "timestamp": "2024-01-13T12:00:00.000000",
+  "details": null
 }
 ```
 
@@ -262,7 +267,8 @@ llama-vision/
 ├── README.md              # This file
 └── app/
     ├── webhook.py         # Flask application
-    └── schema.py          # Pydantic response schemas
+    ├── models.py          # Pydantic validation models
+    └── response_schema.json  # JSON schema for API responses
 ```
 
 ### Building and Testing Locally
