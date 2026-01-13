@@ -1,7 +1,8 @@
 .PHONY: build run stop clean test help
 
-# Default model name (can be overridden)
+# Default model names (can be overridden)
 MODEL_NAME ?= llama-3.2-11b-vision-instruct-q4_k_m.gguf
+CLIP_MODEL_NAME ?= mmproj-model-f16.gguf
 
 help:
 	@echo "Llama Vision Docker - Available targets:"
@@ -17,6 +18,7 @@ help:
 	@echo ""
 	@echo "Environment variables:"
 	@echo "  MODEL_NAME       - Model filename (default: $(MODEL_NAME))"
+	@echo "  CLIP_MODEL_NAME  - CLIP projector filename (default: $(CLIP_MODEL_NAME))"
 
 build:
 	docker build --pull --rm -t llama-vision:latest .
@@ -26,6 +28,7 @@ run:
 		-p 5000:5000 \
 		-v $$(pwd)/models:/models \
 		-e MODEL_NAME=$(MODEL_NAME) \
+		-e CLIP_MODEL_NAME=$(CLIP_MODEL_NAME) \
 		--name llama-vision \
 		llama-vision:latest
 

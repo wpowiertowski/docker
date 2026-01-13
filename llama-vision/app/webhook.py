@@ -15,7 +15,6 @@ from flask import Flask, request, jsonify
 from werkzeug.exceptions import BadRequest
 from PIL import Image
 from llama_cpp import Llama
-from llama_cpp.llama_chat_format import Llava15ChatHandler
 
 from schema import VisionResponse, ErrorResponse, HealthResponse, TokenUsage
 
@@ -41,26 +40,42 @@ def load_model():
     
     model_path_env = os.environ.get('MODEL_PATH', '/models')
     model_name_env = os.environ.get('MODEL_NAME', 'llama-3.2-11b-vision-instruct-q4_k_m.gguf')
+    clip_model_name_env = os.environ.get('CLIP_MODEL_NAME', 'mmproj-model-f16.gguf')
     
     full_model_path = Path(model_path_env) / model_name_env
+    full_clip_path = Path(model_path_env) / clip_model_name_env
     
     logger.info(f"Loading model from: {full_model_path}")
+    logger.info(f"Loading CLIP model from: {full_clip_path}")
     
     if not full_model_path.exists():
         logger.error(f"Model file not found at: {full_model_path}")
         raise FileNotFoundError(f"Model file not found at: {full_model_path}")
     
+    if not full_clip_path.exists():
+        logger.warning(f"CLIP model file not found at: {full_clip_path}")
+        logger.warning("Vision features may not work without CLIP model")
+    
     try:
-        # Initialize with vision support using llava chat handler
-        # For vision models, we need the appropriate chat handler
-        llama_model = Llama(
-            model_path=str(full_model_path),
-            n_ctx=2048,  # Context window
-            n_threads=os.cpu_count(),  # Use all available CPU threads
-            n_gpu_layers=0,  # CPU only, no GPU layers
-            verbose=False,
-            chat_format="llava-1-5",  # Vision chat format
-        )
+        # Initialize with vision support
+        # For Llama 3.2 Vision models, we need both the main model and CLIP projector
+        model_kwargs = {
+            "model_path": str(full_model_path),
+            "n_ctx": 2048,  # Context window
+            "n_threads": os.cpu_count(),  # Use all available CPU threads
+            "n_gpu_layers": 0,  # CPU only, no GPU layers
+            "verbose": False,
+        }
+        
+        # Add CLIP model if available
+        if full_clip_path.exists():
+            model_kwargs["clip_model_path"] = str(full_clip_path)
+            model_kwargs["chat_format"] = "llava-1-5"  # Vision chat format
+            logger.info("CLIP model loaded for vision support")
+        else:
+            logger.warning("Running without CLIP model - vision features disabled")
+        
+        llama_model = Llama(**model_kwargs)
         model_name = model_name_env
         logger.info(f"Model loaded successfully: {model_name}")
         return True

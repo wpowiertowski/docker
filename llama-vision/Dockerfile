@@ -39,6 +39,7 @@ COPY app/ /app/
 
 # Environment variables
 ENV MODEL_NAME="llama-3.2-11b-vision-instruct-q4_k_m.gguf"
+ENV CLIP_MODEL_NAME="mmproj-model-f16.gguf"
 ENV MODEL_PATH="/models"
 ENV FLASK_APP=webhook.py
 ENV PYTHONUNBUFFERED=1

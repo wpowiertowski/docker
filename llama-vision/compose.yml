@@ -13,8 +13,9 @@ services:
       # Mount your models directory here
       - ./models:/models
     environment:
-      # Configure your model name
+      # Configure your model names
       - MODEL_NAME=llama-3.2-11b-vision-instruct-q4_k_m.gguf
+      - CLIP_MODEL_NAME=mmproj-model-f16.gguf
       - MODEL_PATH=/models
       - PORT=5000
     restart: unless-stopped
