@@ -4,7 +4,7 @@ For the formal JSON schema definitions, see request_schema.json and response_sch
 """
 
 from typing import Optional, Dict, Any, Literal
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 

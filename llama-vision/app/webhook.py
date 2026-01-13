@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify
 from PIL import Image
 from llama_cpp import Llama
 
-from models import InferenceRequest, VisionResponse, ErrorResponse, HealthResponse, TokenUsage
+from models import VisionResponse, ErrorResponse, HealthResponse, TokenUsage
 
 
 # Configure logging
