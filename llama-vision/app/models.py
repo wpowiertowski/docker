@@ -1,8 +1,9 @@
 """
-Response schema definitions for the Llama Vision webhook.
+Response models for runtime validation in the Llama Vision webhook.
+For the formal JSON schema definition, see response_schema.json.
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from pydantic import BaseModel, Field
 from datetime import datetime
 
@@ -33,7 +34,9 @@ class ErrorResponse(BaseModel):
     
     success: bool = Field(default=False, description="Always False for error responses")
     error: str = Field(description="Error message describing what went wrong")
-    error_type: str = Field(description="Type of error (e.g., validation, model, system)")
+    error_type: Literal["validation", "model", "system"] = Field(
+        description="Type of error (validation, model, or system)"
+    )
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat(),
                           description="ISO timestamp of the error")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
@@ -42,7 +45,9 @@ class ErrorResponse(BaseModel):
 class HealthResponse(BaseModel):
     """Health check response format."""
     
-    status: str = Field(description="Health status (healthy, unhealthy, degraded)")
+    status: Literal["healthy", "unhealthy", "degraded"] = Field(
+        description="Health status (healthy, unhealthy, or degraded)"
+    )
     model_loaded: bool = Field(description="Whether the model is loaded and ready")
     model_name: str = Field(description="Name of the loaded model")
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat(),
