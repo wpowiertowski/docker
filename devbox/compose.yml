@@ -4,6 +4,8 @@ services:
   devbox:
     image: devbox:latest
     restart: always
+    ports:
+      - "2222:22"
     networks:
       - devbox
     volumes:

@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
        curl \
        git \
        zsh \
+       openssh-server \
        software-properties-common
 
 # install python 3.14
@@ -32,10 +33,19 @@ COPY .zshrc /root/
 COPY .gitconfig /root/
 COPY .ssh/* /root/.ssh/
 
+# configure SSH for public key auth only
+RUN mkdir -p /run/sshd && \
+    chmod 700 /root/.ssh && \
+    chmod 600 /root/.ssh/* && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config && \
+    echo 'AuthorizedKeysFile .ssh/authorized_keys' >> /etc/ssh/sshd_config
+
 # change default shell to zsh
 RUN chsh -s $(which zsh)
 
 WORKDIR /home/workspace
 
-# start vscode tunnel
-CMD ["code", "tunnel", "--name", "devbox", "--accept-server-license-terms", "--cli-data-dir", "/home/workspace/.vscode-server/cli", "--server-data-dir", "/home/workspace/.vscode-server/server", "--extensions-dir", "/home/workspace/.vscode-server/extensions" ]
+# start SSH daemon and vscode tunnel
+CMD service ssh start && code tunnel --name devbox --accept-server-license-terms --cli-data-dir /home/workspace/.vscode-server/cli --server-data-dir /home/workspace/.vscode-server/server --extensions-dir /home/workspace/.vscode-server/extensions

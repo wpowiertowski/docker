@@ -64,6 +64,12 @@ services:
     command: poetry run posse
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sS -X POST 'http://ghost-posse.ghost.orb.local:5000/healthcheck' -H 'Content-Type: application/json' -d '{}' || exit 1"]
+      interval: 30m
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     volumes:
       - ./config.yml:/app/config.yml:ro
     secrets:
