@@ -1,0 +1,25 @@
+services:
+  vcmi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vcmi:latest
+    container_name: vcmi
+    ports:
+      - "6080:6080"
+    volumes:
+      # Mount VCMI data directory
+      - ./vcmi-data:/home/vcmi/.local/share/vcmi
+    environment:
+      - DISPLAY=:99
+      - XDG_RUNTIME_DIR=/tmp/runtime-vcmi
+    restart: unless-stopped
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
