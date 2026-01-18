@@ -128,7 +128,7 @@ COPY --from=builder /opt/vcmi /opt/vcmi
 
 # Add VCMI to PATH
 ENV PATH="/opt/vcmi/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/vcmi/lib:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/opt/vcmi/lib"
 
 # Create non-root user for running VCMI
 RUN useradd -m -s /bin/bash vcmi && \
@@ -139,107 +139,103 @@ RUN useradd -m -s /bin/bash vcmi && \
 RUN mkdir -p /etc/supervisor/conf.d
 
 # Create supervisor configuration
-RUN cat > /etc/supervisor/conf.d/supervisord.conf << 'EOF'
-[supervisord]
-nodaemon=true
-user=root
-logfile=/var/log/supervisor/supervisord.log
-pidfile=/var/run/supervisord.pid
-
-[program:xvfb]
-command=/usr/bin/Xvfb :99 -screen 0 1280x720x24 -ac +extension GLX +render -noreset
-autostart=true
-autorestart=true
-priority=10
-user=root
-stdout_logfile=/var/log/supervisor/xvfb.log
-stderr_logfile=/var/log/supervisor/xvfb_error.log
-
-[program:openbox]
-command=/usr/bin/openbox-session
-autostart=true
-autorestart=true
-priority=20
-user=vcmi
-environment=DISPLAY=":99",HOME="/home/vcmi"
-stdout_logfile=/var/log/supervisor/openbox.log
-stderr_logfile=/var/log/supervisor/openbox_error.log
-
-[program:x11vnc]
-command=/usr/bin/x11vnc -display :99 -nopw -listen 0.0.0.0 -xkb -forever -shared
-autostart=true
-autorestart=true
-priority=30
-user=root
-stdout_logfile=/var/log/supervisor/x11vnc.log
-stderr_logfile=/var/log/supervisor/x11vnc_error.log
-
-[program:novnc]
-command=/opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 6080
-autostart=true
-autorestart=true
-priority=40
-user=root
-stdout_logfile=/var/log/supervisor/novnc.log
-stderr_logfile=/var/log/supervisor/novnc_error.log
-
-[program:vcmilauncher]
-command=/opt/vcmi/bin/vcmilauncher
-autostart=false
-autorestart=false
-priority=50
-user=vcmi
-environment=DISPLAY=":99",HOME="/home/vcmi",XDG_RUNTIME_DIR="/tmp/runtime-vcmi"
-stdout_logfile=/var/log/supervisor/vcmilauncher.log
-stderr_logfile=/var/log/supervisor/vcmilauncher_error.log
-EOF
+RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=root' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'logfile=/var/log/supervisor/supervisord.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'pidfile=/var/run/supervisord.pid' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:xvfb]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/usr/bin/Xvfb :99 -screen 0 1280x720x24 -ac +extension GLX +render -noreset' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=10' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=root' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/xvfb.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/xvfb_error.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:openbox]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/usr/bin/openbox-session' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=20' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=vcmi' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'environment=DISPLAY=":99",HOME="/home/vcmi"' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/openbox.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/openbox_error.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:x11vnc]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/usr/bin/x11vnc -display :99 -nopw -listen 0.0.0.0 -xkb -forever -shared' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=30' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=root' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/x11vnc.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/x11vnc_error.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:novnc]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 6080' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=40' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=root' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/novnc.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/novnc_error.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:vcmilauncher]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/opt/vcmi/bin/vcmilauncher' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=50' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=vcmi' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'environment=DISPLAY=":99",HOME="/home/vcmi",XDG_RUNTIME_DIR="/tmp/runtime-vcmi"' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/var/log/supervisor/vcmilauncher.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/var/log/supervisor/vcmilauncher_error.log' >> /etc/supervisor/conf.d/supervisord.conf
 
 # Create entrypoint script
-RUN cat > /entrypoint.sh << 'EOF'
-#!/bin/bash
-set -e
-
-# Set up XDG runtime directory for the vcmi user
-export XDG_RUNTIME_DIR="/tmp/runtime-vcmi"
-mkdir -p "$XDG_RUNTIME_DIR"
-chown vcmi:vcmi "$XDG_RUNTIME_DIR"
-chmod 700 "$XDG_RUNTIME_DIR"
-
-# Create VCMI data directories
-mkdir -p /home/vcmi/.local/share/vcmi/config
-mkdir -p /home/vcmi/.local/share/vcmi/Games
-mkdir -p /home/vcmi/.local/share/vcmi/Mods
-chown -R vcmi:vcmi /home/vcmi/.local/share/vcmi
-
-# Create supervisor log directory
-mkdir -p /var/log/supervisor
-
-echo "=========================================="
-echo "VCMI Docker Container"
-echo "=========================================="
-echo ""
-echo "Web GUI Access:"
-echo "  Open your browser and navigate to:"
-echo "  http://localhost:6080"
-echo ""
-echo "VCMI Data Directory:"
-echo "  /home/vcmi/.local/share/vcmi"
-echo ""
-echo "Important Notes:"
-echo "  1. You need to provide Heroes III game data files"
-echo "  2. Place game data in the mounted volume at /home/vcmi/.local/share/vcmi"
-echo "  3. The VCMI launcher will start automatically in the background"
-echo "  4. Access the GUI through your browser at http://localhost:6080"
-echo ""
-echo "To manually start VCMI launcher:"
-echo "  supervisorctl start vcmilauncher"
-echo ""
-echo "Starting services..."
-echo "=========================================="
-
-# Start supervisord
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-EOF
+RUN printf '#!/bin/bash\n\
+set -e\n\
+\n\
+# Set up XDG runtime directory for the vcmi user\n\
+export XDG_RUNTIME_DIR="/tmp/runtime-vcmi"\n\
+mkdir -p "$XDG_RUNTIME_DIR"\n\
+chown vcmi:vcmi "$XDG_RUNTIME_DIR"\n\
+chmod 700 "$XDG_RUNTIME_DIR"\n\
+\n\
+# Create VCMI data directories\n\
+mkdir -p /home/vcmi/.local/share/vcmi/config\n\
+mkdir -p /home/vcmi/.local/share/vcmi/Games\n\
+mkdir -p /home/vcmi/.local/share/vcmi/Mods\n\
+chown -R vcmi:vcmi /home/vcmi/.local/share/vcmi\n\
+\n\
+# Create supervisor log directory\n\
+mkdir -p /var/log/supervisor\n\
+\n\
+echo "=========================================="\n\
+echo "VCMI Docker Container"\n\
+echo "=========================================="\n\
+echo ""\n\
+echo "Web GUI Access:"\n\
+echo "  Open your browser and navigate to:"\n\
+echo "  http://localhost:6080"\n\
+echo ""\n\
+echo "VCMI Data Directory:"\n\
+echo "  /home/vcmi/.local/share/vcmi"\n\
+echo ""\n\
+echo "Important Notes:"\n\
+echo "  1. You need to provide Heroes III game data files"\n\
+echo "  2. Place game data in the mounted volume at /home/vcmi/.local/share/vcmi"\n\
+echo "  3. The VCMI launcher will start automatically in the background"\n\
+echo "  4. Access the GUI through your browser at http://localhost:6080"\n\
+echo ""\n\
+echo "To manually start VCMI launcher:"\n\
+echo "  supervisorctl start vcmilauncher"\n\
+echo ""\n\
+echo "Starting services..."\n\
+echo "=========================================="\n\
+\n\
+# Start supervisord\n\
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf\n' > /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
