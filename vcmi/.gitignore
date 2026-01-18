@@ -1,0 +1,11 @@
+# VCMI data directory (when testing locally)
+vcmi-data/
+
+# Temporary files
+*.tmp
+*.log
+
+# Build artifacts
+*.o
+*.so
+*.a
