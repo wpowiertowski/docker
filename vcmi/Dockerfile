@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     clang \
     git \
     pkg-config \
+    wget \
     # SDL2 development libraries
     libsdl2-dev \
     libsdl2-image-dev \
@@ -30,6 +31,7 @@ RUN apt-get update && apt-get install -y \
     libboost-locale-dev \
     libboost-date-time-dev \
     libboost-atomic-dev \
+    libboost-iostreams-dev \
     # FFmpeg libraries
     libavformat-dev \
     libswscale-dev \
@@ -38,15 +40,27 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libtbb-dev \
     libfuzzylite-dev \
+    libsquish-dev \
     # Qt5 for launcher
     qtbase5-dev \
     libqt5network5 \
+    libqt5svg5-dev \
     qttools5-dev \
-    # LuaJIT and ONNX Runtime
+    # LuaJIT
     libluajit-5.1-dev \
-    libonnxruntime-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install ONNX Runtime from GitHub releases
+RUN ONNX_VERSION=1.23.2 && \
+    wget -q https://github.com/microsoft/onnxruntime/releases/download/v${ONNX_VERSION}/onnxruntime-linux-aarch64-${ONNX_VERSION}.tgz && \
+    tar -xzf onnxruntime-linux-aarch64-${ONNX_VERSION}.tgz && \
+    mkdir -p /usr/local/include/onnxruntime && \
+    cp -r onnxruntime-linux-aarch64-${ONNX_VERSION}/include/* /usr/local/include/onnxruntime/ && \
+    cp -r onnxruntime-linux-aarch64-${ONNX_VERSION}/lib/* /usr/local/lib/ && \
+    ln -s /usr/local/lib /usr/local/lib64 && \
+    ldconfig && \
+    rm -rf onnxruntime-linux-aarch64-${ONNX_VERSION}*
 
 # Clone VCMI from develop branch
 WORKDIR /build
@@ -54,6 +68,8 @@ RUN git clone --branch develop --depth 1 https://github.com/vcmi/vcmi.git
 
 # Build VCMI
 WORKDIR /build/vcmi
+RUN git submodule update --init --recursive
+
 RUN mkdir build && cd build && \
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
@@ -88,6 +104,7 @@ RUN apt-get update && apt-get install -y \
     libboost-locale1.83.0 \
     libboost-date-time1.83.0 \
     libboost-atomic1.83.0 \
+    libboost-iostreams1.83.0 \
     # FFmpeg runtime libraries
     libavformat60 \
     libswscale7 \
@@ -96,14 +113,14 @@ RUN apt-get update && apt-get install -y \
     zlib1g \
     libtbb12 \
     libfuzzylite6.0 \
+    libsquish0 \
     # Qt5 runtime
     libqt5core5t64 \
     libqt5gui5t64 \
     libqt5widgets5t64 \
     libqt5network5t64 \
-    # LuaJIT and ONNX Runtime
+    # LuaJIT
     libluajit-5.1-2 \
-    libonnxruntime1.16.3 \
     # X11 and GUI support
     xvfb \
     x11vnc \
@@ -117,6 +134,14 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install ONNX Runtime from GitHub releases
+RUN ONNX_VERSION=1.23.2 && \
+    wget -q https://github.com/microsoft/onnxruntime/releases/download/v${ONNX_VERSION}/onnxruntime-linux-aarch64-${ONNX_VERSION}.tgz && \
+    tar -xzf onnxruntime-linux-aarch64-${ONNX_VERSION}.tgz && \
+    cp -r onnxruntime-linux-aarch64-${ONNX_VERSION}/lib/* /usr/local/lib/ && \
+    ldconfig && \
+    rm -rf onnxruntime-linux-aarch64-${ONNX_VERSION}*
 
 # Install noVNC and websockify
 RUN git clone --branch v1.4.0 --depth 1 https://github.com/novnc/noVNC.git /opt/noVNC && \
@@ -184,8 +209,8 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:vcmilauncher]' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'command=/opt/vcmi/bin/vcmilauncher' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autostart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=false' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'priority=50' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'user=vcmi' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'environment=DISPLAY=":99",HOME="/home/vcmi",XDG_RUNTIME_DIR="/tmp/runtime-vcmi"' >> /etc/supervisor/conf.d/supervisord.conf && \
