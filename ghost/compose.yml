@@ -87,7 +87,7 @@ services:
       BACKUP_CRON_EXPRESSION: "0 2 * * 0"
       BACKUP_FILENAME: "ghost-backup-%Y-%m-%dT%H-%M-%S.tar.gz"
       BACKUP_RETENTION_DAYS: "31"
-      BACKUP_STOP_CONTAINER_LABEL: "ghost-backup=stop"
+      BACKUP_STOP_DURING_BACKUP_LABEL: "ghost-backup=stop"
       BACKUP_PRUNING_PREFIX: "ghost-backup-"
       DROPBOX_REFRESH_TOKEN_FILE: /run/secrets/dropbox_refresh_token
       DROPBOX_APP_KEY_FILE: /run/secrets/dropbox_app_key
