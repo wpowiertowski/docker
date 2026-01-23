@@ -38,6 +38,7 @@ services:
     command: --mysql-native-password=ON
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+      - "ghost-backup=stop"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -64,12 +65,6 @@ services:
     command: poetry run posse
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sS -X POST 'http://ghost-posse.ghost.orb.local:5000/healthcheck' -H 'Content-Type: application/json' -d '{}' || exit 1"]
-      interval: 30m
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     volumes:
       - ./config.yml:/app/config.yml:ro
     secrets:
@@ -79,6 +74,35 @@ services:
       - mastodon_behindtheviewfinder_access_token 
       - bluesky_personal_app_password
       - bluesky_behindtheviewfinder_app_password 
+    networks:
+      - ghost
+
+  ghost-backup:
+    container_name: ghost-backup
+    image: offen/docker-volume-backup:v2
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      BACKUP_CRON_EXPRESSION: "0 2 * * 0"
+      BACKUP_FILENAME: "ghost-backup-%Y-%m-%dT%H-%M-%S.tar.gz"
+      BACKUP_RETENTION_DAYS: "31"
+      BACKUP_STOP_CONTAINER_LABEL: "ghost-backup=stop"
+      BACKUP_PRUNING_PREFIX: "ghost-backup-"
+      DROPBOX_REFRESH_TOKEN_FILE: /run/secrets/dropbox_refresh_token
+      DROPBOX_APP_KEY_FILE: /run/secrets/dropbox_app_key
+      DROPBOX_APP_SECRET_FILE: /run/secrets/dropbox_app_secret
+      DROPBOX_REMOTE_PATH: "/ghost-backups"
+      DROPBOX_CONCURRENCY_LEVEL: "6"
+    volumes:
+      - ghost-content:/backup/ghost-content:ro
+      - ghost-db:/backup/ghost-db:ro
+      - ./backups:/archive
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    secrets:
+      - dropbox_refresh_token
+      - dropbox_app_key
+      - dropbox_app_secret
     networks:
       - ghost
 
@@ -105,3 +129,9 @@ secrets:
     file: ./secrets/bluesky_personal_app_password.txt
   bluesky_behindtheviewfinder_app_password:
     file: ./secrets/bluesky_behindtheviewfinder_app_password.txt
+  dropbox_refresh_token:
+    file: ./secrets/dropbox_refresh_token.txt
+  dropbox_app_key:
+    file: ./secrets/dropbox_app_key.txt
+  dropbox_app_secret:
+    file: ./secrets/dropbox_app_secret.txt
