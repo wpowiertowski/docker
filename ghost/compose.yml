@@ -67,6 +67,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     volumes:
       - ./config.yml:/app/config.yml:ro
+      - posse-interactions:/app/data
     secrets:
       - pushover_app_token
       - pushover_user_key
@@ -110,6 +111,8 @@ volumes:
   ghost-db:
     external: true
   ghost-content:
+    external: true
+  posse-interactions:
     external: true
 
 networks:
