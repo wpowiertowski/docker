@@ -107,12 +107,41 @@ services:
     networks:
       - ghost
 
+  ghost-caddy:
+    container_name: ghost-caddy
+    image: caddy:2-alpine
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - ghost
+  
+  ghost-caddy-tunnel:
+    container_name: ghost-caddy-tunnel
+    image: cloudflare/cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - TUNNEL_TOKEN=${CADDY_TUNNEL_TOKEN}
+    networks:
+      - ghost
+
 volumes:
   ghost-db:
     external: true
   ghost-content:
     external: true
   posse-interactions:
+    external: true
+  caddy-data:
+    external: true
+  caddy-config:
     external: true
 
 networks:
