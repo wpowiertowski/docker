@@ -75,6 +75,7 @@ services:
       - mastodon_behindtheviewfinder_access_token 
       - bluesky_personal_app_password
       - bluesky_behindtheviewfinder_app_password 
+      - ghost_content_api_key
     networks:
       - ghost
 
@@ -167,3 +168,5 @@ secrets:
     file: ./secrets/dropbox_app_key.txt
   dropbox_app_secret:
     file: ./secrets/dropbox_app_secret.txt
+  ghost_content_api_key:
+    file: ./secrets/ghost_content_api_key.txt
