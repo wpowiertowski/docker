@@ -114,10 +114,6 @@ services:
     restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-    environment:
-      # CORS origin - set to your blog domain (e.g., https://yourblog.com)
-      # Use * to allow all origins (less secure, not recommended for production)
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

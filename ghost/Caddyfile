@@ -34,17 +34,12 @@
         Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
         # Remove server identification header
         -Server
-        # CORS headers - restrict to allowed origins
-        # Use {env.CORS_ORIGIN} or set a default
-        Access-Control-Allow-Origin "{env.CORS_ORIGIN:*}"
-        Access-Control-Allow-Methods "GET, OPTIONS"
-        Access-Control-Allow-Headers "Content-Type"
-        Access-Control-Max-Age "86400"
+        # Note: CORS headers are handled by the backend (posse)
     }
 
-    # Handle CORS preflight OPTIONS requests
+    # Handle CORS preflight OPTIONS requests - proxy to backend
     handle @allowed_options {
-        respond "" 204
+        reverse_proxy ghost-posse:5000
     }
 
     # Handle allowed GET requests
