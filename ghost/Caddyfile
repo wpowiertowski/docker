@@ -4,7 +4,7 @@
 :80 {
     # Block path traversal and suspicious patterns first
     @blocked {
-        path_regexp suspicious .*(\.\.|%2e%2e|%252e).*
+        path_regexp suspicious .*(\.\.|%2e%2e|%252e|%00|%0a|%0d).*
     }
     handle @blocked {
         respond "Forbidden" 403
@@ -28,6 +28,8 @@
         X-Frame-Options "DENY"
         # Prevent content-type sniffing
         X-Content-Type-Options "nosniff"
+        # Enable XSS protection
+        X-XSS-Protection "1; mode=block"
         # Strict referrer policy
         Referrer-Policy "strict-origin-when-cross-origin"
         # Content Security Policy - restrictive for API
@@ -46,8 +48,8 @@
     handle @allowed_get {
         reverse_proxy ghost-posse:5000 {
             # Forward real client IP to backend
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto {scheme}
         }
     }
