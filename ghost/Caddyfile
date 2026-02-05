@@ -1,29 +1,71 @@
+# Security-hardened Caddyfile for POSSE API
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
+
 :80 {
-    # Only allow GET requests to /api/interactions/{post_id}
-    @allowed {
+    # Block path traversal and suspicious patterns first
+    @blocked {
+        path_regexp suspicious .*(\.\.|%2e%2e|%252e).*
+    }
+    handle @blocked {
+        respond "Forbidden" 403
+    }
+
+    # Allow GET requests to /api/interactions/{post_id}
+    @allowed_get {
         method GET
         path /api/interactions/*
     }
 
-    # Add security headers
+    # Allow OPTIONS for CORS preflight requests
+    @allowed_options {
+        method OPTIONS
+        path /api/interactions/*
+    }
+
+    # Security headers applied to all responses
     header {
         # Prevent clickjacking
         X-Frame-Options "DENY"
         # Prevent content-type sniffing
         X-Content-Type-Options "nosniff"
-        # Enable XSS protection
-        X-XSS-Protection "1; mode=block"
-        # Remove server header
+        # Strict referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Content Security Policy - restrictive for API
+        Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+        # Remove server identification header
         -Server
+        # CORS headers - restrict to allowed origins
+        # Use {env.CORS_ORIGIN} or set a default
+        Access-Control-Allow-Origin "{env.CORS_ORIGIN:*}"
+        Access-Control-Allow-Methods "GET, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type"
+        Access-Control-Max-Age "86400"
     }
 
-    handle @allowed {
-        reverse_proxy ghost-posse:5000
+    # Handle CORS preflight OPTIONS requests
+    handle @allowed_options {
+        respond "" 204
+    }
+
+    # Handle allowed GET requests
+    handle @allowed_get {
+        reverse_proxy ghost-posse:5000 {
+            # Forward real client IP to backend
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
     }
 
     # Deny all other requests
     handle {
         respond "Not found" 404
+    }
+
+    # Access logging for security monitoring
+    log {
+        output stdout
+        format json
+        level INFO
     }
 }
