@@ -2,6 +2,9 @@
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
 :80 {
+    # Disable admin API in production
+    admin off
+
     # Block path traversal and suspicious patterns first
     @blocked {
         path_regexp suspicious .*(\.\.|%2e%2e|%252e|%00|%0a|%0d).*
@@ -51,6 +54,8 @@
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto {scheme}
+            # Ensure backend receives canonical Host header
+            header_up Host {host}
         }
     }
 
