@@ -4,6 +4,16 @@
 {
     # Disable admin API in production (global option)
     admin off
+
+    # Server-level timeouts to mitigate slowloris and connection exhaustion
+    servers {
+        timeouts {
+            read_body   10s
+            read_header  5s
+            write       30s
+            idle        60s
+        }
+    }
 }
 
 :80 {
@@ -13,6 +23,11 @@
     }
     handle @blocked {
         respond "Forbidden" 403
+    }
+
+    # Reject oversized request bodies (GET/OPTIONS endpoints have no body)
+    request_body {
+        max_size 1KB
     }
 
     # Allow GET requests to /api/interactions/{post_id}

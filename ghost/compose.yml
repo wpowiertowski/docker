@@ -8,6 +8,8 @@ services:
     depends_on:
       - ghost-db
       - ghost-tunnel
+    security_opt:
+      - no-new-privileges:true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     environment:
@@ -34,6 +36,8 @@ services:
     image: mysql:8
     restart: always
     command: --mysql-native-password=ON
+    security_opt:
+      - no-new-privileges:true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       - "ghost-backup=stop"
@@ -49,6 +53,8 @@ services:
     image: cloudflare/cloudflared
     restart: always
     command: tunnel --no-autoupdate run
+    security_opt:
+      - no-new-privileges:true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     environment:
@@ -63,6 +69,13 @@ services:
     command: poetry run posse
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64m
+    mem_limit: 256m
+    cpus: 0.5
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     volumes:
@@ -72,18 +85,21 @@ services:
       - pushover_app_token
       - pushover_user_key
       - mastodon_personal_access_token
-      - mastodon_behindtheviewfinder_access_token 
+      - mastodon_behindtheviewfinder_access_token
       - bluesky_personal_app_password
-      - bluesky_behindtheviewfinder_app_password 
+      - bluesky_behindtheviewfinder_app_password
       - ghost_content_api_key
       - internal_api_token
     networks:
       - ghost
+      - proxy
 
   ghost-backup:
     container_name: ghost-backup
     image: offen/docker-volume-backup:v2
     restart: always
+    security_opt:
+      - no-new-privileges:true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     environment:
@@ -115,6 +131,15 @@ services:
     restart: always
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64m
+    mem_limit: 128m
+    cpus: 0.5
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     volumes:
@@ -122,21 +147,28 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      - ghost
-  
+      - proxy
+
   ghost-caddy-tunnel:
     container_name: ghost-caddy-tunnel
     image: cloudflare/cloudflared
     restart: always
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64m
+    mem_limit: 128m
+    cpus: 0.5
     command: tunnel --no-autoupdate run
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - TUNNEL_TOKEN=${CADDY_TUNNEL_TOKEN}
     networks:
-      - ghost
+      - proxy
 
 volumes:
   ghost-db:
@@ -153,6 +185,8 @@ volumes:
 networks:
   ghost:
     external: true
+  proxy:
+    driver: bridge
 
 secrets:
   pushover_app_token:
