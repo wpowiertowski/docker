@@ -1,10 +1,12 @@
 # Security-hardened Caddyfile for POSSE API
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
-:80 {
-    # Disable admin API in production
+{
+    # Disable admin API in production (global option)
     admin off
+}
 
+:80 {
     # Block path traversal and suspicious patterns first
     @blocked {
         path_regexp suspicious .*(\.\.|%2e%2e|%252e|%00|%0a|%0d).*

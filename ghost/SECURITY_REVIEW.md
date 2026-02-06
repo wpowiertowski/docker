@@ -29,7 +29,7 @@ An attacker can abuse inconsistent upstream forwarding to influence backend-gene
 Caddy's admin endpoint should not be exposed in production. Even if not intentionally published, hard-disabling reduces accidental control-plane exposure.
 
 **Mitigation implemented**
-- Set `admin off` in the Caddyfile.
+- Set `admin off` in Caddy global options (not site block) to ensure valid config parsing and disable control-plane API.
 
 **Why it is low-risk for functionality**
 - This stack does not rely on Caddy's dynamic runtime API.
