@@ -50,6 +50,19 @@ If a public-facing process is compromised (e.g., Caddy or POSSE endpoint bug), L
 - Prevents privilege escalation via `setuid`/`setgid` binaries while preserving normal runtime behavior.
 - No changes to ports, routes, secrets, or volumes.
 
+
+### 4. Scheme confusion behind Cloudflare Tunnel
+
+**Threat**
+When Caddy is reached via cloudflared over internal HTTP, forwarding `X-Forwarded-Proto` based on local connection scheme can incorrectly report `http` to POSSE. This can affect URL generation, origin checks, and downstream security logic.
+
+**Mitigation implemented**
+- Explicitly set `X-Forwarded-Proto https` for POSSE upstream requests in Caddy.
+
+**Why it is low-risk for functionality**
+- Public traffic is HTTPS at Cloudflare edge; this reflects real client-facing scheme.
+- Does not change route/method filtering or API exposure.
+
 ## Additional recommended hardening (not changed yet)
 
 1. Pin images by digest (`image: repo@sha256:...`) for `ghost`, `mysql`, `caddy`, `cloudflared`, and `posse` to reduce supply-chain drift.
