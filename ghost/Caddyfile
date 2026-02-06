@@ -1,6 +1,11 @@
 # Security-hardened Caddyfile for POSSE API
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
+{
+    # Disable admin API in production (global option)
+    admin off
+}
+
 :80 {
     # Block path traversal and suspicious patterns first
     @blocked {
@@ -50,7 +55,11 @@
             # Forward real client IP to backend
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
-            header_up X-Forwarded-Proto {scheme}
+            # Cloudflare Tunnel terminates public HTTPS before reaching Caddy over HTTP
+            # Keep upstream semantics aligned with external client scheme
+            header_up X-Forwarded-Proto https
+            # Forward public request host as seen by Caddy (preserved by Cloudflare unless overridden)
+            header_up Host {host}
         }
     }
 

@@ -61,6 +61,8 @@ services:
     image: wpowiertowski/posse:latest
     restart: always
     command: poetry run posse
+    security_opt:
+      - no-new-privileges:true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     volumes:
@@ -111,6 +113,8 @@ services:
     container_name: ghost-caddy
     image: caddy:2-alpine
     restart: always
+    security_opt:
+      - no-new-privileges:true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     volumes:
@@ -124,6 +128,8 @@ services:
     container_name: ghost-caddy-tunnel
     image: cloudflare/cloudflared
     restart: always
+    security_opt:
+      - no-new-privileges:true
     command: tunnel --no-autoupdate run
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
