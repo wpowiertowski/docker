@@ -210,3 +210,5 @@ secrets:
     file: ./secrets/ghost_content_api_key.txt
   internal_api_token:
     file: ./secrets/internal_api_token.txt
+  turnstile_secret:
+    file: ./secrets/turnstile_secret.txt

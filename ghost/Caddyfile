@@ -1,4 +1,4 @@
-# Security-hardened Caddyfile for POSSE API
+# Security-hardened Caddyfile for POSSE API and Webmention reply endpoints
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
 {
@@ -25,55 +25,156 @@
         respond "Forbidden" 403
     }
 
-    # Reject oversized request bodies (GET/OPTIONS endpoints have no body)
-    request_body {
-        max_size 1KB
-    }
+    # -------------------------------------------------------------------------
+    # Allowed route matchers (default deny below)
+    # -------------------------------------------------------------------------
 
-    # Allow GET requests to /api/interactions/{post_id}
-    @allowed_get {
+    # Social interactions API
+    @api_interactions_get {
         method GET
         path /api/interactions/*
     }
-
-    # Allow OPTIONS for CORS preflight requests
-    @allowed_options {
+    @api_interactions_options {
         method OPTIONS
         path /api/interactions/*
     }
 
-    # Security headers applied to all responses
-    header {
-        # Prevent clickjacking
-        X-Frame-Options "DENY"
-        # Prevent content-type sniffing
-        X-Content-Type-Options "nosniff"
-        # Enable XSS protection
-        X-XSS-Protection "1; mode=block"
-        # Strict referrer policy
-        Referrer-Policy "strict-origin-when-cross-origin"
-        # Content Security Policy - restrictive for API
-        Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
-        # Remove server identification header
-        -Server
-        # Note: CORS headers are handled by the backend (posse)
+    # Webmention reply form + endpoints
+    @webmention_form_get {
+        method GET
+        path /webmention
+    }
+    @webmention_reply_post {
+        method POST
+        path /api/webmention/reply
+    }
+    @webmention_reply_options {
+        method OPTIONS
+        path /api/webmention/reply
+    }
+    @webmention_entry_get {
+        method GET
+        path /reply/*
     }
 
-    # Handle CORS preflight OPTIONS requests - proxy to backend
-    handle @allowed_options {
+    # -------------------------------------------------------------------------
+    # API routes (strict CSP, tiny body limits)
+    # -------------------------------------------------------------------------
+
+    handle @api_interactions_options {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
         reverse_proxy ghost-posse:5000
     }
 
-    # Handle allowed GET requests
-    handle @allowed_get {
+    handle @api_interactions_get {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
         reverse_proxy ghost-posse:5000 {
             # Forward real client IP to backend
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             # Cloudflare Tunnel terminates public HTTPS before reaching Caddy over HTTP
-            # Keep upstream semantics aligned with external client scheme
             header_up X-Forwarded-Proto https
-            # Forward public request host as seen by Caddy (preserved by Cloudflare unless overridden)
+            # Forward public request host as seen by Caddy
+            header_up Host {host}
+        }
+    }
+
+    # -------------------------------------------------------------------------
+    # Webmention UI routes (tight but functional CSP)
+    # -------------------------------------------------------------------------
+
+    handle @webmention_form_get {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; img-src 'self' data:"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
+    }
+
+    handle @webmention_entry_get {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'; img-src 'self' data:"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
+    }
+
+    handle @webmention_reply_options {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000
+    }
+
+    handle @webmention_reply_post {
+        # Reply payload includes content text + metadata; keep bounded.
+        request_body {
+            max_size 16KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
             header_up Host {host}
         }
     }
