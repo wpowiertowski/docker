@@ -64,7 +64,8 @@ services:
 
   ghost-posse:
     container_name: ghost-posse
-    image: wpowiertowski/posse:latest
+    # image: wpowiertowski/posse:latest
+    image: posse-app:latest
     restart: always
     command: poetry run posse
     security_opt:
