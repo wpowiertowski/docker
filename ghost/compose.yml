@@ -91,7 +91,6 @@ services:
       - internal_api_token
     networks:
       - ghost
-      - proxy
 
   ghost-backup:
     container_name: ghost-backup
@@ -146,28 +145,7 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      - proxy
-
-  ghost-caddy-tunnel:
-    container_name: ghost-caddy-tunnel
-    image: cloudflare/cloudflared
-    restart: always
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    read_only: true
-    tmpfs:
-      - /tmp:noexec,nosuid,size=64m
-    mem_limit: 128m
-    cpus: 0.5
-    command: tunnel --no-autoupdate run
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-    environment:
-      - TUNNEL_TOKEN=${CADDY_TUNNEL_TOKEN}
-    networks:
-      - proxy
+      - ghost
 
 volumes:
   ghost-db:
@@ -184,8 +162,6 @@ volumes:
 networks:
   ghost:
     external: true
-  proxy:
-    driver: bridge
 
 secrets:
   pushover_app_token:
