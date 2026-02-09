@@ -3,16 +3,28 @@ services:
   web:
     image: nginx:alpine
     container_name: ownpost-web
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - ./site:/usr/share/nginx/html:ro
     restart: unless-stopped
+    networks:
+      - ownpost
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: ownpost-cloudflared
-    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run 
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       - web
     restart: unless-stopped
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - ownpost
+
+networks:
+  ownpost:
+    external: true
