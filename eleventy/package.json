@@ -1,0 +1,14 @@
+{
+  "name": "eleventy-static-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Example 11ty static site in Docker",
+  "scripts": {
+    "build": "eleventy",
+    "start": "npx serve _site -l 8080"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.0.0",
+    "serve": "^14.2.4"
+  }
+}
