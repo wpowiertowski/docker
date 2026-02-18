@@ -1,4 +1,4 @@
-# Security-hardened Caddyfile for POSSE API and Webmention reply endpoints
+# Security-hardened Caddyfile for POSSE API and Webmention endpoints
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
 {
@@ -25,6 +25,11 @@
         respond "Forbidden" 403
     }
 
+    # Advertise Webmention endpoint for discovery (HTTP Link header)
+    header {
+        Link "</webmention>; rel=\"webmention\""
+    }
+
     # -------------------------------------------------------------------------
     # Allowed route matchers (default deny below)
     # -------------------------------------------------------------------------
@@ -38,18 +43,44 @@
         method OPTIONS
         path /api/interactions/*
     }
+    @api_webmentions_get {
+        method GET
+        path /api/webmentions /api/webmentions/
+    }
+    @api_webmentions_options {
+        method OPTIONS
+        path /api/webmentions /api/webmentions/
+    }
 
     # Webmention reply form + endpoints
     @webmention_form_get {
         method GET
         path /webmention
     }
+    @webmention_receiver_post {
+        method POST
+        path /webmention
+        header Content-Type *application/x-www-form-urlencoded*
+    }
+    @webmention_receiver_options {
+        method OPTIONS
+        path /webmention
+    }
+    @webmention_receiver_post_invalid {
+        method POST
+        path /webmention
+    }
     @webmention_reply_post {
         method POST
         path /api/webmention/reply
+        header Content-Type *application/json*
     }
     @webmention_reply_options {
         method OPTIONS
+        path /api/webmention/reply
+    }
+    @webmention_reply_post_invalid {
+        method POST
         path /api/webmention/reply
     }
     @webmention_entry_get {
@@ -73,7 +104,12 @@
             Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
             -Server
         }
-        reverse_proxy ghost-posse:5000
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
     }
 
     handle @api_interactions_get {
@@ -95,6 +131,46 @@
             # Cloudflare Tunnel terminates public HTTPS before reaching Caddy over HTTP
             header_up X-Forwarded-Proto https
             # Forward public request host as seen by Caddy
+            header_up Host {host}
+        }
+    }
+
+    handle @api_webmentions_options {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
+    }
+
+    handle @api_webmentions_get {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
             header_up Host {host}
         }
     }
@@ -121,6 +197,53 @@
             header_up X-Forwarded-Proto https
             header_up Host {host}
         }
+    }
+
+    handle @webmention_receiver_options {
+        request_body {
+            max_size 1KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
+    }
+
+    handle @webmention_receiver_post {
+        request_body {
+            max_size 4KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
+    }
+
+    handle @webmention_receiver_post_invalid {
+        request_body {
+            max_size 1KB
+        }
+        respond "Unsupported Media Type" 415
     }
 
     handle @webmention_entry_get {
@@ -155,7 +278,12 @@
             Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
             -Server
         }
-        reverse_proxy ghost-posse:5000
+        reverse_proxy ghost-posse:5000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
     }
 
     handle @webmention_reply_post {
@@ -177,6 +305,13 @@
             header_up X-Forwarded-Proto https
             header_up Host {host}
         }
+    }
+
+    handle @webmention_reply_post_invalid {
+        request_body {
+            max_size 1KB
+        }
+        respond "Unsupported Media Type" 415
     }
 
     # Deny all other requests
