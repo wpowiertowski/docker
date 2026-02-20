@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+TINYB_HOME="/home/tinybird/.tinyb"
+TINYB_LOCAL=".tinyb"
+
+if [ ! -f "$TINYB_LOCAL" ]; then
+    if [ -f "$TINYB_HOME" ]; then
+        cp "$TINYB_HOME" "$TINYB_LOCAL"
+    else
+        echo "Error: Not logged in to Tinybird." >&2
+        echo "Run: docker compose run --rm tinybird-login" >&2
+        exit 1
+    fi
+fi
+
+exec tb "$@"
