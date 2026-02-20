@@ -1,4 +1,4 @@
-# Security-hardened Caddyfile for POSSE API and Webmention endpoints
+# Security-hardened Caddyfile for POSSE API, Webmention, and Tinybird analytics endpoints
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
 {
@@ -28,6 +28,32 @@
     # Advertise Webmention endpoint for discovery (HTTP Link header)
     header {
         Link "</webmention>; rel=\"webmention\""
+    }
+
+    # -------------------------------------------------------------------------
+    # Tinybird analytics proxy
+    # Ghost injects ghost-stats.js which POSTs page hits here.
+    # handle_path strips /.ghost/analytics so traffic-analytics receives
+    # /api/v1/page_hit as expected.
+    # -------------------------------------------------------------------------
+    handle_path /.ghost/analytics/* {
+        request_body {
+            max_size 16KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+            -Server
+        }
+        reverse_proxy traffic-analytics:3000 {
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
     }
 
     # -------------------------------------------------------------------------
