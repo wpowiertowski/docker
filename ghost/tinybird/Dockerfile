@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /home/tinybird
 
 # Install Tinybird CLI
-RUN curl -sSL https://install.tinybird.co | bash
+RUN curl -fsSL https://tinybird.co | sh && /root/.local/bin/tb --version
 
 ENV PATH="/root/.local/bin:${PATH}"
 
