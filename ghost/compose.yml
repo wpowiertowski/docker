@@ -69,6 +69,33 @@ services:
     networks:
       - ghost
 
+  # ---------------------------------------------------------------------------
+  # Traffic Analytics proxy (sits between browser and Tinybird)
+  # Ghost injects ghost-stats.js which POSTs to /.ghost/analytics/api/v1/page_hit.
+  # This service receives those events, enriches them, and forwards to Tinybird.
+  # ---------------------------------------------------------------------------
+  traffic-analytics:
+    container_name: traffic-analytics
+    image: ghost/traffic-analytics:1.0.85
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    expose:
+      - "3000"
+    volumes:
+      - traffic-analytics-data:/data
+    environment:
+      NODE_ENV: production
+      PROXY_TARGET: ${TINYBIRD_API_URL:-https://api.tinybird.co}/v0/events
+      SALT_STORE_TYPE: ${SALT_STORE_TYPE:-file}
+      SALT_STORE_FILE_PATH: /data/salts.json
+      TINYBIRD_TRACKER_TOKEN: ${TINYBIRD_TRACKER_TOKEN:-}
+      LOG_LEVEL: debug
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - ghost
+
   ghost-posse:
     container_name: ghost-posse
     image: wpowiertowski/posse:latest
@@ -237,6 +264,7 @@ volumes:
   # Tinybird volumes (local, managed by compose)
   tinybird-home: {}
   tinybird-files: {}
+  traffic-analytics-data: {}
 
 networks:
   ghost:
