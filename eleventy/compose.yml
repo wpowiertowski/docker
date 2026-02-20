@@ -1,0 +1,15 @@
+name: eleventy
+services:
+  eleventy-site:
+    container_name: eleventy-site
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=16m
+      - /var/run:size=16m
+      - /tmp:size=16m

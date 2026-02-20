@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or "11ty Ghost-like Demo" }}</title>
+    <link rel="stylesheet" href="/css/site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <p class="site-brand">Behind the Build</p>
+        <p class="site-tagline">An 11ty static site with Ghost-inspired styling.</p>
+      </div>
+    </header>
+
+    <main class="container content">{{ content | safe }}</main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <small>Powered by 11ty + Docker.</small>
+      </div>
+    </footer>
+  </body>
+</html>
