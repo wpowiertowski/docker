@@ -33,10 +33,17 @@
     # -------------------------------------------------------------------------
     # Tinybird analytics proxy
     # Ghost injects ghost-stats.js which POSTs page hits here.
-    # handle_path strips /.ghost/analytics so traffic-analytics receives
-    # /api/v1/page_hit as expected.
+    # uri strip_prefix removes /.ghost/analytics so traffic-analytics
+    # receives /api/v1/page_hit as expected.
+    # path_regexp is used instead of handle_path /.ghost/analytics/* because
+    # Caddy's glob * only matches a single path segment, but the real
+    # request path has multiple segments (e.g. /api/v1/page_hit).
     # -------------------------------------------------------------------------
-    handle_path /.ghost/analytics/* {
+    @analytics {
+        path_regexp ^/\.ghost/analytics/
+    }
+    handle @analytics {
+        uri strip_prefix /.ghost/analytics
         request_body {
             max_size 16KB
         }
@@ -48,7 +55,7 @@
             Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
             -Server
         }
-        reverse_proxy traffic-analytics:3000 {
+        reverse_proxy traffic-analytics.ghost.orb.local:3000 {
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
