@@ -1,6 +1,7 @@
 # Ghost + Caddy + POSSE Security Review (Caddy exposure + POSSE endpoint handling)
 
 Date: 2026-02-07
+Last validated against: Caddyfile and POSSE source on 2026-02-20
 
 ## Scope
 
@@ -24,10 +25,16 @@ Caddy is default-deny with explicit route allowlisting. The following routes are
 
 - `GET /api/interactions/*`
 - `OPTIONS /api/interactions/*`
-- `GET /webmention`
-- `POST /api/webmention/reply`
+- `GET /api/webmentions`
+- `OPTIONS /api/webmentions`
+- `GET /webmention` (reply form)
+- `POST /webmention` (W3C receiver, `application/x-www-form-urlencoded` only)
+- `OPTIONS /webmention`
+- `POST /api/webmention/reply` (`application/json` only)
 - `OPTIONS /api/webmention/reply`
 - `GET /reply/*`
+
+Global `Link: </webmention>; rel="webmention"` header is set on all responses for W3C webmention endpoint discovery.
 
 All other paths return `404`.
 
@@ -71,7 +78,8 @@ Caddy sets `X-Real-IP` and `X-Forwarded-For` from `Cf-Connecting-Ip`. This is co
 | Endpoint | Method(s) | Exposure purpose | Current safeguards | Residual risk |
 |---|---|---|---|---|
 | `/api/interactions/*` | GET, OPTIONS | Public interaction lookups | Body limit, CSP, default-deny routing, traversal filter | Upstream handling quality and rate limits define abuse ceiling |
-| `/webmention` | GET | Public reply form | Tight CSP for Cloudflare challenge scripts/frame, body limit | UI endpoint still crawlable and targetable for automated abuse |
+| `/api/webmentions` | GET, OPTIONS | Public webmention query | 1KB body limit, CSP, rate limiting, referrer validation | Query only returns verified webmentions; rate limits bound abuse |
+| `/webmention` | GET, POST, OPTIONS | Reply form (GET) + W3C receiver (POST) | 4KB body limit for POST, CSP with Turnstile for GET, rate limiting, SSRF protection | Source URL fetching during async verification; receiver rate-limited per IP |
 | `/api/webmention/reply` | POST, OPTIONS | Reply submission | 16KB body cap, security headers, default-deny routing | Abuse pressure depends on POSSE anti-automation (captcha/token/rate limiting) |
 | `/reply/*` | GET | Reply resource view | CSP + body cap + traversal filter | Content rendering safety in POSSE determines XSS exposure |
 
