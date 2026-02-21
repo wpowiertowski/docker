@@ -40,6 +40,7 @@
     # request path has multiple segments (e.g. /api/v1/page_hit).
     # -------------------------------------------------------------------------
     @analytics {
+        method POST OPTIONS
         path_regexp ^/\.ghost/analytics/
     }
     handle @analytics {
@@ -56,6 +57,10 @@
             -Server
         }
         reverse_proxy traffic-analytics.ghost.orb.local:3000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -138,6 +143,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -158,6 +167,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             # Forward real client IP to backend
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
@@ -181,6 +194,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -201,6 +218,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -225,6 +246,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -245,6 +270,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -265,6 +294,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -292,6 +325,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -312,6 +349,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
@@ -333,6 +374,10 @@
             -Server
         }
         reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 10s
+            }
             header_up X-Real-IP {header.Cf-Connecting-Ip}
             header_up X-Forwarded-For {header.Cf-Connecting-Ip}
             header_up X-Forwarded-Proto https
