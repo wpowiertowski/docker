@@ -1,4 +1,7 @@
-# Security-hardened Caddyfile for POSSE API, Webmention, and Tinybird analytics endpoints
+# Single entry point for all behindtheviewfinder.com traffic.
+# Cloudflare Tunnel routes everything here; Caddy dispatches POSSE API,
+# Webmention, and analytics requests to their backends and forwards
+# everything else (post pages, admin, assets) to Ghost.
 # Listen on HTTP only - Cloudflare Tunnel handles HTTPS
 
 {
@@ -69,7 +72,7 @@
     }
 
     # -------------------------------------------------------------------------
-    # Allowed route matchers (default deny below)
+    # POSSE route matchers (unmatched requests fall through to Ghost below)
     # -------------------------------------------------------------------------
 
     # Social interactions API
@@ -392,9 +395,18 @@
         respond "Unsupported Media Type" 415
     }
 
-    # Deny all other requests
+    # Everything else → Ghost (post pages, admin, assets, themes, etc.)
     handle {
-        respond "Not found" 404
+        reverse_proxy ghost-server:2368 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 30s
+            }
+            header_up X-Real-IP {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-For {header.Cf-Connecting-Ip}
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
     }
 
     # Access logging for security monitoring
