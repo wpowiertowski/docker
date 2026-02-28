@@ -59,7 +59,7 @@
             Content-Security-Policy "default-src 'none'; base-uri 'none'; frame-ancestors 'none'"
             -Server
         }
-        reverse_proxy traffic-analytics.ghost.orb.local:3000 {
+        reverse_proxy ghost-traffic-analytics.ghost.orb.local:3000 {
             transport http {
                 dial_timeout 5s
                 response_header_timeout 10s
