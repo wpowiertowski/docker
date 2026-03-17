@@ -1,0 +1,11 @@
+.env
+tokens/
+data/
+notebooks/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.git/

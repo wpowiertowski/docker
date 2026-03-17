@@ -1,0 +1,35 @@
+services:
+  trader:
+    build:
+      context: .
+      target: development
+    image: schwab-trader:dev
+    container_name: schwab-trader
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+      - ./tokens:/app/tokens   # persists OAuth tokens between restarts
+      - ./data:/app/data       # persists downloaded market data
+    ports:
+      - "8182:8182"            # local callback port for Schwab OAuth flow
+    restart: unless-stopped
+
+  jupyter:
+    build:
+      context: .
+      target: development
+    image: schwab-trader:dev
+    container_name: schwab-jupyter
+    env_file:
+      - .env
+    command: ["poetry", "run", "jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--allow-root"]
+    volumes:
+      - ./src:/app/src
+      - ./notebooks:/app/notebooks
+      - ./tokens:/app/tokens
+      - ./data:/app/data
+    ports:
+      - "8888:8888"
+    profiles:
+      - jupyter
