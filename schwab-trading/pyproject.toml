@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "schwab-trader"
+version = "0.1.0"
+description = "Python environment for automated stock trading via Charles Schwab API"
+
+license = "MIT"
+
+authors = [
+    "Wojtek Powiertowski <wojtek@powiertowski.com>"
+]
+
+repository = "https://github.com/wpowiertowski/docker/schwab-trading"
+readme = "README.md"
+
+packages = [
+    { include = "schwab_trader", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12, <4.0"
+
+# Schwab API client
+schwab-py = "^1.4.0"
+
+# Data & analysis
+pandas = "^2.2.0"
+numpy = "^2.0.0"
+
+# HTTP & async
+httpx = "^0.27.0"
+asyncio-throttle = "^1.0.2"
+
+# Config & env
+python-dotenv = "^1.0.0"
+
+# Scheduling
+schedule = "^1.2.2"
+
+# Logging
+loguru = "^0.7.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-asyncio = "^0.23.0"
+ipython = "^8.26.0"
+jupyter = "^1.1.0"
+black = "^24.0.0"
+ruff = "^0.5.0"
+mypy = "^1.11.0"
+pandas-stubs = "^2.2.0"
+
+[tool.poetry.scripts]
+trader = "schwab_trader.__main__:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
