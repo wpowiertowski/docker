@@ -36,17 +36,27 @@ def _generate_par2_cli(image_path: Path, redundancy_pct: int) -> Path:
 
 
 def _generate_par2_python(image_path: Path, redundancy_pct: int) -> Path:
-    """Fallback: encode the file with reedsolo and write a simple recovery blob."""
+    """
+    Fallback: store only ECC bytes (not data) in the .par2 file.
+
+    File format: 1 header byte (nsym) followed by nsym ECC bytes per block.
+    Block size is (255 - nsym) data bytes → 255-byte RS codeword.
+    """
     import reedsolo
 
     data = image_path.read_bytes()
-    # nsym is number of ECC bytes per 255-byte block
-    # redundancy_pct applies to the whole file via proportional nsym
     nsym = max(1, min(127, int(255 * redundancy_pct / 100)))
     rsc = reedsolo.RSCodec(nsym)
-    encoded = bytes(rsc.encode(data))
+    block_size = 255 - nsym
+
+    ecc = bytearray()
+    for i in range(0, len(data), block_size):
+        chunk = data[i:i + block_size]
+        encoded_block = bytes(rsc.encode(chunk))
+        ecc.extend(encoded_block[len(chunk):])  # append only ECC tail
+
     par2_path = image_path.with_suffix(image_path.suffix + ".par2")
-    par2_path.write_bytes(encoded)
+    par2_path.write_bytes(bytes([nsym]) + bytes(ecc))
     return par2_path
 
 
@@ -65,18 +75,19 @@ def _verify_python(image_path: Path, par2_path: Path) -> bool:
     import reedsolo
 
     data = image_path.read_bytes()
-    encoded = par2_path.read_bytes()
-    nsym = len(encoded) - len(data)
-    if nsym <= 0:
-        return False
-    # nsym stored per block; approximate from total difference
-    block_nsym = max(1, nsym * 255 // max(1, len(encoded)))
-    rsc = reedsolo.RSCodec(block_nsym)
-    try:
-        decoded, _, _ = rsc.decode(encoded)
-        return bytes(decoded) == data
-    except reedsolo.ReedSolomonError:
-        return False
+    raw = par2_path.read_bytes()
+    nsym, stored_ecc = raw[0], raw[1:]
+
+    rsc = reedsolo.RSCodec(nsym)
+    block_size = 255 - nsym
+
+    computed = bytearray()
+    for i in range(0, len(data), block_size):
+        chunk = data[i:i + block_size]
+        encoded_block = bytes(rsc.encode(chunk))
+        computed.extend(encoded_block[len(chunk):])
+
+    return bytes(computed) == stored_ecc
 
 
 def repair_with_par2(image_path: Path, par2_path: Path) -> bool:
@@ -93,13 +104,25 @@ def repair_with_par2(image_path: Path, par2_path: Path) -> bool:
 def _repair_python(image_path: Path, par2_path: Path) -> bool:
     import reedsolo
 
-    encoded = par2_path.read_bytes()
-    original_size = image_path.stat().st_size
-    block_nsym = max(1, (len(encoded) - original_size) * 255 // max(1, len(encoded)))
-    rsc = reedsolo.RSCodec(block_nsym)
-    try:
-        decoded, _, _ = rsc.decode(encoded)
-        image_path.write_bytes(bytes(decoded))
-        return True
-    except reedsolo.ReedSolomonError:
-        return False
+    corrupted = bytearray(image_path.read_bytes())
+    raw = par2_path.read_bytes()
+    nsym, stored_ecc = raw[0], raw[1:]
+
+    rsc = reedsolo.RSCodec(nsym)
+    block_size = 255 - nsym
+
+    repaired = bytearray()
+    ecc_offset = 0
+    for i in range(0, len(corrupted), block_size):
+        chunk = corrupted[i:i + block_size]
+        ecc_block = stored_ecc[ecc_offset:ecc_offset + nsym]
+        ecc_offset += nsym
+        codeword = bytes(chunk) + bytes(ecc_block)  # reassemble for decode
+        try:
+            decoded, _, _ = rsc.decode(codeword)
+            repaired.extend(decoded)
+        except reedsolo.ReedSolomonError:
+            return False
+
+    image_path.write_bytes(bytes(repaired))
+    return True
