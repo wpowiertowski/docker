@@ -7,38 +7,58 @@ A CLI tool that catalogs batches of photos into a local JSON database, uploads t
 ```bash
 make build
 
-# Add a batch of photos
+# First run bootstraps ~/.photovault/config.toml from the example — fill in your B2 credentials, then:
+make run
+
+# Or invoke commands directly (config is picked up automatically)
 docker run --rm \
   -v ~/.photovault:/root/.photovault \
-  -v /path/to/photos:/photos:ro \
-  -e PHOTOVAULT_B2_KEY_ID=... \
-  -e PHOTOVAULT_B2_APP_KEY=... \
-  -e PHOTOVAULT_B2_BUCKET=my-vault \
+  -v /path/to/photos:/photos \
+  -v /Volumes/MyDisk:/Volumes/MyDisk \
   photovault add /photos --album "2026-04-03 Beach-Sunset"
 
-# List catalog
 docker run --rm -v ~/.photovault:/root/.photovault photovault list
 
-# Retrieve photos
 docker run --rm \
   -v ~/.photovault:/root/.photovault \
   -v ./retrieved:/retrieved \
-  -e PHOTOVAULT_B2_KEY_ID=... \
-  -e PHOTOVAULT_B2_APP_KEY=... \
-  -e PHOTOVAULT_B2_BUCKET=my-vault \
   photovault retrieve --year 2026 --month 04 --day 03 --album Beach-Sunset --dest /retrieved
 ```
 
+## Configuration
+
+Settings live in `~/.photovault/config.toml`. Running `make run` or `make shell` will create the file from `config.toml.example` automatically if it doesn't exist yet.
+
+```toml
+catalog_path   = "~/.photovault/catalog.json"
+external_root  = "/Volumes/MyDisk"
+redundancy_pct = 10
+
+[b2]
+key_id  = "your-key-id"
+app_key = "your-app-key"
+bucket  = "your-bucket"
+```
+
+The config directory can be changed with `CONFIG_DIR`:
+
+```bash
+make run CONFIG_DIR=/mnt/nas/photovault
+```
+
+Environment variables always take precedence over the config file and can be used to override individual values. The config file location itself can be changed with `PHOTOVAULT_CONFIG`.
+
 ## Environment Variables
 
-| Variable | Required | Description |
+| Variable | Default | Description |
 |---|---|---|
-| `PHOTOVAULT_B2_KEY_ID` | Yes | Backblaze B2 application key ID |
-| `PHOTOVAULT_B2_APP_KEY` | Yes | Backblaze B2 application key |
-| `PHOTOVAULT_B2_BUCKET` | Yes | B2 bucket name |
-| `PHOTOVAULT_CATALOG_PATH` | No | Catalog path (default: `~/.photovault/catalog.json`) |
-| `PHOTOVAULT_EXTERNAL_ROOT` | No | Default external disk mount point |
-| `PHOTOVAULT_REDUNDANCY_PCT` | No | PAR2 redundancy percentage (default: `10`) |
+| `PHOTOVAULT_CONFIG` | `~/.photovault/config.toml` | Path to the config file |
+| `PHOTOVAULT_B2_KEY_ID` | — | Backblaze B2 application key ID |
+| `PHOTOVAULT_B2_APP_KEY` | — | Backblaze B2 application key |
+| `PHOTOVAULT_B2_BUCKET` | — | B2 bucket name |
+| `PHOTOVAULT_CATALOG_PATH` | `~/.photovault/catalog.json` | Catalog file path |
+| `PHOTOVAULT_EXTERNAL_ROOT` | — | Default external disk mount point |
+| `PHOTOVAULT_REDUNDANCY_PCT` | `10` | PAR2 redundancy percentage |
 
 ## Commands
 
