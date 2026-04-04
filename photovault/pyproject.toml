@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "photovault"
+version = "0.1.0"
+description = "Photo catalog and backup system with Backblaze B2 and external disk support"
+
+license = "MIT"
+
+authors = [
+    "Wojtek Powiertowski <wojtek@powiertowski.com>"
+]
+
+repository = "https://github.com/wpowiertowski/docker/photovault"
+
+readme = ["README.md"]
+
+packages = [
+    { include = "photovault" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12, <4.0"
+b2sdk = "^2.7"
+reedsolo = "^1.7"
+click = "^8.1"
+tqdm = "^4.66"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+
+[tool.poetry.scripts]
+photovault = "photovault.cli:main"
