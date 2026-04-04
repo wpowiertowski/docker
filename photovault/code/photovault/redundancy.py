@@ -25,13 +25,24 @@ def _generate_par2_cli(image_path: Path, redundancy_pct: int) -> Path:
     cmd = [
         "par2", "create",
         f"-r{redundancy_pct}",
-        "-n1",          # single par2 file
+        "-n1",          # single recovery file
         "-q",           # quiet
         str(par2_base),
         str(image_path),
     ]
     subprocess.run(cmd, check=True, capture_output=True)
-    # par2 names the file <base>.par2
+
+    # par2 creates an index file (foo.jpg.par2) and a separate recovery
+    # blocks file (foo.jpg.vol0+N.par2). Append the recovery blocks into
+    # the index file so we have a single file to store and upload.
+    # The par2 format is packet-based, so concatenation is valid.
+    vol_files = sorted(image_path.parent.glob(image_path.name + ".vol*.par2"))
+    if vol_files:
+        with par2_base.open("ab") as out:
+            for vf in vol_files:
+                out.write(vf.read_bytes())
+                vf.unlink()
+
     return par2_base
 
 
