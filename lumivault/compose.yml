@@ -1,0 +1,30 @@
+name: lumivault
+services:
+  web:
+    image: nginx:alpine
+    container_name: lumivault-web
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - lumivault
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: lumivault-cloudflared
+    command: tunnel --no-autoupdate run
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - web
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - lumivault
+
+networks:
+  lumivault:
+    external: true
