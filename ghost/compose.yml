@@ -123,6 +123,7 @@ services:
       - bluesky_behindtheviewfinder_app_password
       - ghost_content_api_key
       - internal_api_token
+      - ghost_webhook_secret
     networks:
       - ghost
 
@@ -293,5 +294,7 @@ secrets:
     file: ./secrets/ghost_content_api_key.txt
   internal_api_token:
     file: ./secrets/internal_api_token.txt
+  ghost_webhook_secret:
+    file: ./secrets/ghost_webhook_secret.txt
   turnstile_secret:
     file: ./secrets/turnstile_secret.txt
