@@ -93,6 +93,28 @@
         path /api/webmentions /api/webmentions/
     }
 
+    # Ghost webhook delivery to Posse
+    @ghost_webhook {
+        method POST
+        path /webhook/ghost
+    }
+    handle @ghost_webhook {
+        request_body {
+            max_size 64KB
+        }
+        header {
+            X-Frame-Options "DENY"
+            X-Content-Type-Options "nosniff"
+            -Server
+        }
+        reverse_proxy ghost-posse:5000 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 30s
+            }
+        }
+    }
+
     # Webmention reply form + endpoints
     @webmention_form_get {
         method GET
