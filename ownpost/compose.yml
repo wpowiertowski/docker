@@ -1,7 +1,7 @@
 name: ownpost
 services:
   web:
-    image: nginx:alpine
+    image: nginx:alpine@sha256:8aa63af009a39ecd6c28d61da578a5447378c10bb097a069e3a3e0fb42bb6b19
     container_name: ownpost-web
     security_opt:
       - no-new-privileges:true
@@ -12,7 +12,7 @@ services:
       - ownpost
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:latest@sha256:6b599ca3e974349ead3286d178da61d291961182ec3fe9c505e1dd02c8ac31b0
     container_name: ownpost-cloudflared
     command: tunnel --no-autoupdate run 
     security_opt:

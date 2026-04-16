@@ -3,15 +3,13 @@ services:
 
   ghost-server:
     container_name: ghost-server
-    image: ghost:6
+    image: ghost:6@sha256:b7e8380d870369ddff882873ff63ee7ce013d382e81cf97adbe26a4d13daf38b
     restart: always
     depends_on:
       - ghost-db
       - ghost-tunnel
     security_opt:
       - no-new-privileges:true
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       url: ${DOMAIN}
       database__client: mysql
@@ -40,13 +38,12 @@ services:
 
   ghost-db:
     container_name: ghost-db
-    image: mysql:8
+    image: mysql:8@sha256:669b2d89f3916f5263af230ffa20889a03c7f4bedf58133fe8780466c613f7ae
     restart: always
     command: --mysql-native-password=ON
     security_opt:
       - no-new-privileges:true
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
       - "ghost-backup=stop"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -57,13 +54,11 @@ services:
 
   ghost-tunnel:
     container_name: ghost-tunnel
-    image: cloudflare/cloudflared
+    image: cloudflare/cloudflared:latest@sha256:6b599ca3e974349ead3286d178da61d291961182ec3fe9c505e1dd02c8ac31b0
     restart: always
     command: tunnel --no-autoupdate run
     security_opt:
       - no-new-privileges:true
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
@@ -76,7 +71,7 @@ services:
   # ---------------------------------------------------------------------------
   ghost-traffic-analytics:
     container_name: ghost-traffic-analytics
-    image: ghost/traffic-analytics:1.0.85
+    image: ghost/traffic-analytics:1.0.85@sha256:6f94ef99e06ffe696523395c259bcc873217a0ef0e426a20e14358d2c5744ed0
     restart: always
     security_opt:
       - no-new-privileges:true
@@ -91,14 +86,12 @@ services:
       SALT_STORE_FILE_PATH: /data/salts.json
       TINYBIRD_TRACKER_TOKEN: ${TINYBIRD_TRACKER_TOKEN:-}
       LOG_LEVEL: debug
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - ghost
 
   ghost-posse:
     container_name: ghost-posse
-    image: wpowiertowski/posse:latest
+    image: wpowiertowski/posse:latest@sha256:fcacdfea8f26dca5cf2f9ddc6d52865a195dd3422e5d17e420b8f501392ba558
     restart: always
     command: poetry run posse
     security_opt:
@@ -109,8 +102,6 @@ services:
       - /tmp:noexec,nosuid,size=64m
     mem_limit: 512m
     cpus: 0.5
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     volumes:
       - ./config.yml:/app/config.yml:ro
       - posse-interactions:/app/data
@@ -129,12 +120,10 @@ services:
 
   ghost-backup:
     container_name: ghost-backup
-    image: offen/docker-volume-backup:v2
+    image: offen/docker-volume-backup:v2@sha256:23c9daf2529f1ffdc5db1911e424a613c618a14a75b2f20b1fe59ab282bbd271
     restart: always
     security_opt:
       - no-new-privileges:true
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       BACKUP_CRON_EXPRESSION: "0 2 * * 0"
       BACKUP_FILENAME: "ghost-backup-%Y-%m-%dT%H-%M-%S.tar.gz"
@@ -160,7 +149,7 @@ services:
 
   ghost-caddy:
     container_name: ghost-caddy
-    image: caddy:2-alpine
+    image: caddy:2-alpine@sha256:24d58e24e4231c6667677a39469a3d843a3222eadbf640f22933f24bed0939ec
     restart: always
     security_opt:
       - no-new-privileges:true
@@ -173,8 +162,6 @@ services:
       - /tmp:noexec,nosuid,size=64m
     mem_limit: 128m
     cpus: 0.5
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -209,7 +196,7 @@ services:
 
   tinybird-sync:
     container_name: tinybird-sync
-    image: ghost:6
+    image: ghost:6@sha256:b7e8380d870369ddff882873ff63ee7ce013d382e81cf97adbe26a4d13daf38b
     command: >
       sh -c "
         if [ -d /var/lib/ghost/current/core/server/data/tinybird ]; then
