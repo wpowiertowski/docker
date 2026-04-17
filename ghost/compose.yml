@@ -91,7 +91,7 @@ services:
 
   ghost-posse:
     container_name: ghost-posse
-    image: wpowiertowski/posse:latest@sha256:fcacdfea8f26dca5cf2f9ddc6d52865a195dd3422e5d17e420b8f501392ba558
+    image: wpowiertowski/posse:latest
     restart: always
     command: poetry run posse
     security_opt:

@@ -96,11 +96,11 @@
     # Ghost webhook delivery to Posse
     @ghost_webhook {
         method POST
-        path /webhook/ghost
+        path /webhook/ghost /webhook/ghost/*
     }
     handle @ghost_webhook {
         request_body {
-            max_size 64KB
+            max_size 5MB
         }
         header {
             X-Frame-Options "DENY"
