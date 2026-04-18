@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "sp500-rebalance"
+version = "0.1.0"
+description = "S&P 500 rebalancer: excludes given tickers and redistributes weights proportionally across the remaining constituents."
+
+license = "MIT"
+
+authors = [
+    "Wojtek Powiertowski <wojtek@powiertowski.com>"
+]
+
+repository = "https://github.com/wpowiertowski/docker/python"
+
+# README file(s) are used as the package description
+readme = ["README.md"]
+
+packages = [
+    { include = "sp500" }
+]
+
+# Keywords (translated to tags on the package index)
+[tool.poetry.dependencies]
+# Compatible Python versions
+python = ">=3.14, <4.0"
+pandas = "^2.2.0"
+requests = "^2.32.0"
+openpyxl = "^3.1.0"
+lxml = "^6.0.0"
+
+# Dependency groups are supported for organizing your dependencies
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+# Python-style entrypoints and scripts are easily expressed
+[tool.poetry.scripts]
+app = "sp500.rebalance:main"
