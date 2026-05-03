@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "coordinator"
+version = "0.1.0"
+description = "GitHub Actions runner coordinator with WoL worker lifecycle management"
+authors = []
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiohttp = "3.13.5"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

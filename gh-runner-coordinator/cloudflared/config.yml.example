@@ -1,0 +1,17 @@
+# Cloudflare Tunnel configuration
+# 1. Create a tunnel: cloudflared tunnel create github-runner
+# 2. Copy the tunnel ID and credentials JSON path below
+# 3. Add a DNS CNAME in the CF dashboard: runner.yourdomain.com -> <tunnel-id>.cfargotunnel.com
+#
+# Alternatively, use CLOUDFLARE_TUNNEL_TOKEN in docker-compose .env and replace
+# the `command:` in docker-compose.yml with:
+#   command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+# (no config file or credentials volume needed in that case)
+
+tunnel: YOUR_TUNNEL_ID_HERE
+credentials-file: /home/nonroot/.cloudflared/YOUR_TUNNEL_ID_HERE.json
+
+ingress:
+  - hostname: runner.yourdomain.com
+    service: http://coordinator:8080
+  - service: http_status:404
