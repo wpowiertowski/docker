@@ -8,16 +8,16 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap" />
   <style>
     :root {
-      --bg: #0f1218;
-      --fg: #f4f6f8;
-      --muted: #b0bcc8;
-      --accent: #7ec8f2;
+      --bg: #160900;
+      --fg: #fff5ee;
+      --muted: #b08870;
+      --accent: #ff7000;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Fira Mono", "IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      background: radial-gradient(80% 80% at 10% 10%, #1a2535 0%, var(--bg) 60%);
+      background: radial-gradient(80% 80% at 30% 20%, #3d1400 0%, var(--bg) 65%);
       color: var(--fg);
       min-height: 100vh;
       display: grid;
@@ -38,6 +38,7 @@
       color: var(--muted);
       font-size: clamp(1rem, 2.4vw, 1.2rem);
     }
+    .logo { width: 120px; height: 120px; display: block; margin: 0 auto 32px; }
     .badge {
       display: inline-block;
       border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
@@ -52,6 +53,7 @@
 </head>
 <body>
   <main>
+    <img src="icon.png" class="logo" alt="LumiVault" />
     <h1>LumiVault</h1>
     <p>The offline-first photo vault for Mac — archive, protect, encrypt, and back up your library with zero subscriptions and zero cloud lock-in.</p>
   </main>
