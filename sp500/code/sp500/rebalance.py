@@ -31,9 +31,14 @@ DEFAULT_EXCLUDE = [
     "AMD",    # Windows laptop CPUs
     "DELL",   # Windows laptop OEM
     "HPQ",    # Windows laptop OEM
+    "PLTR",   # No Palantir
+    "HD",     # No Home Depot
+    "ORCL",   # No Oracle
 ]
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; sp500-rebalance/1.0)"}
+
+FIDELITY_BASKET_SIZE = 50
 
 
 # ---------------------------------------------------------------------------
@@ -150,6 +155,28 @@ def rebalance(
 
 
 # ---------------------------------------------------------------------------
+# Fidelity basket grouping
+# ---------------------------------------------------------------------------
+
+def assign_baskets(plan: Plan, basket_size: int = FIDELITY_BASKET_SIZE) -> pd.DataFrame:
+    """
+    Split the rebalanced plan into groups sized for Fidelity basket portfolios.
+    Tickers are already sorted by descending rebalanced weight, so basket 1
+    holds the heaviest names. Adds:
+      - basket: 1-indexed basket number
+      - basket_weight_pct: ticker's share of its own basket's dollars (0-100,
+        sums to 100 per basket — what you'd paste into Fidelity)
+    """
+    if basket_size <= 0:
+        raise ValueError("basket_size must be positive")
+    df = plan.df.copy().reset_index(drop=True)
+    df["basket"] = (df.index // basket_size) + 1
+    basket_totals = df.groupby("basket")["dollars"].transform("sum")
+    df["basket_weight_pct"] = df["dollars"] / basket_totals * 100.0
+    return df
+
+
+# ---------------------------------------------------------------------------
 # Reporting
 # ---------------------------------------------------------------------------
 
@@ -201,6 +228,62 @@ def print_report(plan: Plan, top: int | None) -> None:
           f"(rounding diff: ${plan.total_amount - total_dollars:,.4f})")
 
 
+def print_baskets(plan: Plan, basket_size: int = FIDELITY_BASKET_SIZE) -> None:
+    df = assign_baskets(plan, basket_size)
+    n_baskets = int(df["basket"].max())
+
+    print(
+        f"\nFidelity basket grouping "
+        f"(max {basket_size} tickers per basket, {n_baskets} baskets total):"
+    )
+
+    summary = (
+        df.groupby("basket")
+        .agg(tickers=("ticker", "count"), dollars=("dollars", "sum"))
+        .reset_index()
+    )
+    summary["portfolio_pct"] = summary["dollars"] / plan.total_amount * 100.0
+    print(
+        summary.to_string(
+            index=False,
+            formatters={
+                "dollars": "${:,.2f}".format,
+                "portfolio_pct": "{:,.3f}".format,
+            },
+        )
+    )
+
+    for b in range(1, n_baskets + 1):
+        rows = df[df["basket"] == b][
+            ["ticker", "name", "basket_weight_pct", "dollars"]
+        ]
+        print(f"\n--- Basket {b} ({len(rows)} tickers) ---")
+        with pd.option_context("display.max_rows", None, "display.width", 140):
+            print(
+                rows.to_string(
+                    index=False,
+                    formatters={
+                        "basket_weight_pct": "{:,.3f}".format,
+                        "dollars": "${:,.2f}".format,
+                    },
+                )
+            )
+
+
+def write_basket_csvs(plan: Plan, prefix: str, basket_size: int = FIDELITY_BASKET_SIZE) -> list[str]:
+    df = assign_baskets(plan, basket_size)
+    n_baskets = int(df["basket"].max())
+    written: list[str] = []
+    for b in range(1, n_baskets + 1):
+        rows = df[df["basket"] == b][
+            ["ticker", "name", "basket_weight_pct", "dollars"]
+        ]
+        path = f"{prefix}_{b:02d}.csv"
+        rows.to_csv(path, index=False)
+        written.append(path)
+    return written
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -216,6 +299,12 @@ def main() -> None:
                     help="Only show the top N holdings in stdout")
     ap.add_argument("--csv", type=str, default=None,
                     help="Write full allocation plan to this CSV path")
+    ap.add_argument("--baskets", action="store_true",
+                    help="Print Fidelity basket groupings (≤50 tickers per basket)")
+    ap.add_argument("--basket-csv-prefix", type=str, default=None,
+                    help="Write one CSV per basket as PREFIX_01.csv, PREFIX_02.csv, ...")
+    ap.add_argument("--basket-size", type=int, default=FIDELITY_BASKET_SIZE,
+                    help=f"Tickers per basket (default: {FIDELITY_BASKET_SIZE})")
     args = ap.parse_args()
 
     weights, source = load_weights()
@@ -231,6 +320,15 @@ def main() -> None:
         out = out[["ticker", "name", "weight_pct", "rebalanced_weight_pct", "dollars"]]
         out.to_csv(args.csv, index=False)
         print(f"\nWrote {args.csv}")
+
+    if args.baskets:
+        print_baskets(plan, args.basket_size)
+
+    if args.basket_csv_prefix:
+        written = write_basket_csvs(plan, args.basket_csv_prefix, args.basket_size)
+        print("\nWrote basket CSVs:")
+        for p in written:
+            print(f"  {p}")
 
 
 if __name__ == "__main__":
