@@ -1,0 +1,30 @@
+name: healthloom
+services:
+  web:
+    image: nginx:stable-alpine3.23
+    container_name: healthloom-web
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - healthloom
+
+  cloudflared:
+    image: cloudflare/cloudflared:1852-21ca2e225ea5
+    container_name: healthloom-cloudflared
+    command: tunnel --no-autoupdate run
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - web
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - healthloom
+
+networks:
+  healthloom:
+    external: true

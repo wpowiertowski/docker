@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HealthLoom — Fitbit, in Apple Health</title>
+  <meta name="description" content="HealthLoom syncs Fitbit, Fitbit Air, and Pixel Watch data into Apple Health — with an AI coach you control. Native iOS, coming soon." />
+  <meta name="theme-color" content="#F2F0EF" />
+  <meta property="og:title" content="HealthLoom — Fitbit, in Apple Health" />
+  <meta property="og:description" content="Fitbit, Fitbit Air, and Pixel Watch data synced natively into Apple Health — with an AI coach you control." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23245F73'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%23C56A3E'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      /* HealthLoom — Yacht club palette */
+      --canvas: #F2F0EF;
+      --surface: #FFFFFF;
+      --ink: #245F73;        /* deep teal — headings */
+      --secondary: #5C7C87;  /* muted teal-gray — body */
+      --tertiary: #96AEB5;   /* light teal-gray — meta */
+      --border: #E3E0DC;     /* warm hairline */
+      --gray: #BBBDBC;       /* structural divider */
+      --accent: #733E24;     /* rust — the one functional color */
+      --accentTint: #EDE1DA; /* light rust wash */
+      --accentDeep: #5A2F1B; /* darker rust */
+      --radius: 4px;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--canvas); }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background:
+        /* teal glow, top-left */
+        radial-gradient(70% 55% at 12% 6%, rgba(36, 95, 115, 0.16) 0%, rgba(36, 95, 115, 0) 55%),
+        /* rust glow, top-right */
+        radial-gradient(60% 50% at 92% 12%, rgba(115, 62, 36, 0.12) 0%, rgba(115, 62, 36, 0) 52%),
+        /* soft teal deepening, bottom */
+        radial-gradient(90% 60% at 50% 108%, rgba(36, 95, 115, 0.13) 0%, rgba(36, 95, 115, 0) 58%),
+        /* warm base wash, light top → deeper bottom */
+        linear-gradient(165deg, #FBFAF9 0%, var(--canvas) 42%, #E9E6E3 100%);
+      background-attachment: fixed;
+      color: var(--ink);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+    }
+    main {
+      width: 100%;
+      max-width: 560px;
+      padding: 56px 28px;
+      text-align: center;
+    }
+
+    /* brand */
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+    }
+    .brand .dot { width: 7px; height: 7px; background: var(--accent); }
+
+    /* status pill */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 34px;
+      padding: 6px 13px;
+      border-radius: 999px;
+      background: var(--accentTint);
+      color: var(--accentDeep);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .status .live {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+    }
+
+    h1 {
+      margin: 22px 0 0;
+      font-size: clamp(2.1rem, 6.5vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .lede {
+      margin: 20px auto 0;
+      max-width: 30em;
+      font-size: clamp(1rem, 2.6vw, 1.15rem);
+      line-height: 1.5;
+      font-weight: 400;
+      color: var(--secondary);
+    }
+    .lede b { color: var(--ink); font-weight: 500; }
+
+    hr.rule {
+      width: 40px; height: 1px; border: 0;
+      background: var(--gray);
+      margin: 34px auto 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 32px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 18px;
+      border-radius: var(--radius);
+      font-size: 0.92rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .btn--primary {
+      background: var(--ink);
+      color: var(--surface);
+      border: 1px solid var(--ink);
+    }
+    .btn--primary:hover { background: #1c4e5f; border-color: #1c4e5f; }
+    .btn--ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--gray);
+    }
+    .btn--ghost:hover { border-color: var(--ink); }
+    .btn svg { display: block; }
+
+    .meta {
+      margin-top: 30px;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--tertiary);
+    }
+    .meta .sep { margin: 0 8px; opacity: .6; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><span class="dot" aria-hidden="true"></span> healthloom</div>
+
+    <div class="status"><span class="live" aria-hidden="true"></span> In development</div>
+
+    <h1>Fitbit, in Apple&nbsp;Health.</h1>
+
+    <p class="lede">
+      A native iOS app that syncs <b>Fitbit</b>, <b>Fitbit&nbsp;Air</b>, and <b>Pixel&nbsp;Watch</b>
+      data from the Google Health API straight into Apple&nbsp;Health — with an
+      <b>AI coach you control</b>.
+    </p>
+
+    <hr class="rule" />
+
+    <div class="actions">
+      <a class="btn btn--ghost" href="https://github.com/wpowiertowski/healthloom.app" target="_blank" rel="noopener">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        View on GitHub
+      </a>
+    </div>
+
+    <div class="meta">iPhone<span class="sep">·</span>iOS&nbsp;26<span class="sep">·</span>Coming to the App&nbsp;Store</div>
+  </main>
+</body>
+</html>
