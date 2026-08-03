@@ -3,7 +3,7 @@ services:
 
   ghost-server:
     container_name: ghost-server
-    image: ghost:6.39
+    image: ghost:6.55
     restart: always
     depends_on:
       - ghost-db
@@ -54,7 +54,7 @@ services:
 
   ghost-tunnel:
     container_name: ghost-tunnel
-    image: cloudflare/cloudflared:1852-21ca2e225ea5
+    image: cloudflare/cloudflared:1899-3a2b45c2a511
     restart: always
     command: tunnel --no-autoupdate run
     security_opt:
@@ -196,7 +196,7 @@ services:
 
   tinybird-sync:
     container_name: tinybird-sync
-    image: ghost:6.39
+    image: ghost:6.55
     command: >
       sh -c "
         if [ -d /var/lib/ghost/current/core/server/data/tinybird ]; then
