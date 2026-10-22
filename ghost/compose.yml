@@ -3,7 +3,7 @@ services:
 
   ghost-server:
     container_name: ghost-server
-    image: ghost:6.55
+    image: ghost:6.72
     restart: always
     depends_on:
       - ghost-db
@@ -71,7 +71,7 @@ services:
   # ---------------------------------------------------------------------------
   ghost-traffic-analytics:
     container_name: ghost-traffic-analytics
-    image: ghost/traffic-analytics:1.0.244@sha256:98aba0319ef32634c1be41362a322343e71dc8ac6bd31b426a8e115ad14c3b8e
+    image: ghost/traffic-analytics:1.0.499@sha256:524fd7fe6949368346ca5816b2fcc333794178834c5b426bffb03d8297f5e4c2
     restart: always
     security_opt:
       - no-new-privileges:true
@@ -196,7 +196,7 @@ services:
 
   tinybird-sync:
     container_name: tinybird-sync
-    image: ghost:6.55
+    image: ghost:6.72
     command: >
       sh -c "
         if [ -d /var/lib/ghost/current/core/server/data/tinybird ]; then
