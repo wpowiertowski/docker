@@ -12,7 +12,7 @@ services:
       - healthloom
 
   cloudflared:
-    image: cloudflare/cloudflared:1852-21ca2e225ea5
+    image: cloudflare/cloudflared:2026.10.3
     container_name: healthloom-cloudflared
     command: tunnel --no-autoupdate run
     security_opt:

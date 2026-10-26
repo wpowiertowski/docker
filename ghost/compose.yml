@@ -54,7 +54,7 @@ services:
 
   ghost-tunnel:
     container_name: ghost-tunnel
-    image: cloudflare/cloudflared:1899-3a2b45c2a511
+    image: cloudflare/cloudflared:2026.10.3
     restart: always
     command: tunnel --no-autoupdate run
     security_opt:
