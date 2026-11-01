@@ -2,6 +2,7 @@
 
 Date: 2026-02-07
 Last validated against: Caddyfile and POSSE source on 2026-02-20
+Updated 2026-11-01: added the Ghost webhook route (`/webhook/ghost`), checked against POSSE `b037cef`. Other sections were not re-validated.
 
 ## Scope
 
@@ -33,6 +34,7 @@ Caddy is default-deny with explicit route allowlisting. The following routes are
 - `POST /api/webmention/reply` (`application/json` only)
 - `OPTIONS /api/webmention/reply`
 - `GET /reply/*`
+- `POST /webhook/ghost` and `/webhook/ghost/*` (Ghost webhook delivery to POSSE: `post-updated`, `post-deleted`; HMAC-signed)
 
 Global `Link: </webmention>; rel="webmention"` header is set on all responses for W3C webmention endpoint discovery.
 
@@ -47,6 +49,7 @@ All other paths return `404`.
 - Request body limits are present:
   - `1KB` for read-only or preflight endpoints.
   - `16KB` for webmention reply submission.
+  - `5MB` for Ghost webhook delivery (payload carries full post content).
 - Reverse proxy forwards expected upstream context (`Host`, `X-Forwarded-Proto=https`, Cloudflare IP header mapping).
 
 ### Caddy risks and recommendations
@@ -71,6 +74,24 @@ Caddy sets `X-Real-IP` and `X-Forwarded-For` from `Cf-Connecting-Ip`. This is co
 
 **Recommendation:** Optional cleanup; keep CSP as the primary browser-side control.
 
+#### 4) Low: Ghost webhook route is public, with a large body limit and lighter proxy settings
+
+Added 2026-11-01. `POST /webhook/ghost` and `/webhook/ghost/*` are exposed so Ghost can deliver post webhooks to POSSE. The handler differs from the other POSSE routes:
+
+- The body limit is `5MB` (vs. 1–16KB elsewhere), because Ghost sends the full post in the payload.
+- Only `X-Frame-Options`, `X-Content-Type-Options` and `-Server` are set; there is no CSP or `Referrer-Policy`.
+- No `header_up` directives, so POSSE sees the Caddy hop instead of the client IP from `Cf-Connecting-Ip`.
+
+Mitigations (verified against POSSE source at `b037cef`, `src/ghost/ghost.py`):
+
+- Every webhook endpoint requires a valid `X-Ghost-Signature` (HMAC-SHA256 over body + timestamp, compared with `hmac.compare_digest`); invalid or missing signatures get `401`.
+- Requests with a timestamp more than 300 seconds from now are rejected (replay window).
+- The secret is mounted as the `ghost_webhook_secret` Docker secret. The running container logs `Ghost webhook signature verification enabled` at startup. If the secret is missing, POSSE logs a warning and the endpoints become unauthenticated, so check for that log line after deploys.
+
+**Recommendation:**
+- Add the same `header_up` forwarding as the other POSSE routes so per-IP rate limiting and logging see real client IPs.
+- Consider pointing the Ghost webhook target at `http://ghost-posse:5000/webhook/ghost` on the internal `ghost` network and removing the public route, if Ghost accepts an internal URL. That would take this endpoint off the internet entirely.
+
 ---
 
 ## Endpoint-by-endpoint security view
@@ -82,6 +103,7 @@ Caddy sets `X-Real-IP` and `X-Forwarded-For` from `Cf-Connecting-Ip`. This is co
 | `/webmention` | GET, POST, OPTIONS | Reply form (GET) + W3C receiver (POST) | 4KB body limit for POST, CSP with Turnstile for GET, rate limiting, SSRF protection | Source URL fetching during async verification; receiver rate-limited per IP |
 | `/api/webmention/reply` | POST, OPTIONS | Reply submission | 16KB body cap, security headers, default-deny routing | Abuse pressure depends on POSSE anti-automation (captcha/token/rate limiting) |
 | `/reply/*` | GET | Reply resource view | CSP + body cap + traversal filter | Content rendering safety in POSSE determines XSS exposure |
+| `/webhook/ghost` | POST | Ghost → POSSE post webhooks (`/webhook/ghost/*` subpaths) | HMAC-SHA256 signature, 5-minute replay window, 5MB body cap, traversal filter | Unauthenticated if the webhook secret is ever missing; large body cap allows bigger payloads before signature check |
 
 ---
 
