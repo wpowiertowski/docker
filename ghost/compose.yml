@@ -149,7 +149,7 @@ services:
 
   ghost-caddy:
     container_name: ghost-caddy
-    image: caddy:2-alpine
+    image: caddy:2.11.9-alpine
     restart: always
     security_opt:
       - no-new-privileges:true
