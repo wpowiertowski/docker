@@ -1,7 +1,7 @@
 name: ownpost
 services:
   web:
-    image: nginx:stable-alpine3.23
+    image: nginx:1.30.7-alpine
     container_name: ownpost-web
     security_opt:
       - no-new-privileges:true
